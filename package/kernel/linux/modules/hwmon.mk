@@ -182,6 +182,21 @@ endef
 $(eval $(call KernelPackage,hwmon-lm77))
 
 
+define KernelPackage/hwmon-lm83
+  TITLE:=LM83 monitoring support
+  KCONFIG:=CONFIG_SENSORS_LM83
+  FILES:=$(LINUX_DIR)/drivers/hwmon/lm83.ko
+  AUTOLOAD:=$(call AutoProbe,lm83)
+  $(call AddDepends/hwmon,+kmod-i2c-core)
+endef
+
+define KernelPackage/hwmon-lm83/description
+ Kernel module for LM83 thermal monitor chip
+endef
+
+$(eval $(call KernelPackage,hwmon-lm83))
+
+
 define KernelPackage/hwmon-lm85
   TITLE:=LM85 monitoring support
   KCONFIG:=CONFIG_SENSORS_LM85
