@@ -11,6 +11,7 @@ define Device/Default
   PROFILES = Default $$(DEVICE_NAME)
   KERNEL_NAME := vmlinux.elf
   KERNEL_INITRAMFS_NAME := vmlinux-initramfs.elf
+  KERNEL_DEPENDS = $$(wildcard $(DTS_DIR)/$$(DEVICE_DTS).dts)
   KERNEL := kernel-bin | strip-kernel | patch-cmdline
   IMAGES := sysupgrade.tar
   IMAGE/sysupgrade.tar/squashfs := append-rootfs | pad-extra 128k | sysupgrade-tar rootfs=$$$$@
@@ -22,6 +23,10 @@ define Build/strip-kernel
 	$(TARGET_CROSS)strip -R .notes $@ -o $@.stripped && mv $@.stripped $@
 endef
 
+define Build/append-dtb-to-elf
+	$(TARGET_CROSS)objcopy --update-section .appended_dtb=$(KDIR)/image-$(firstword $(DEVICE_DTS)).dtb $@
+endef
+
 define Device/generic
   FILESYSTEMS := ext4
   DEVICE_TITLE := Generic
@@ -31,6 +36,9 @@ TARGET_DEVICES += generic
 ER_CMDLINE:=-mtdparts=phys_mapped_flash:640k(boot0)ro,640k(boot1)ro,64k(eeprom)ro root=/dev/mmcblk0p2 rootfstype=squashfs,ext4 rootwait
 define Device/er
   CMDLINE := $(ER_CMDLINE) 
+  DEVICE_DTS_DIR := $(DTS_DIR)/cavium-octeon
+  DEVICE_DTS := ubnt_e100
+  KERNEL := kernel-bin | append-dtb-to-elf | strip-kernel | patch-cmdline
   DEVICE_TITLE := Ubiquiti EdgeRouter
 endef
 TARGET_DEVICES += er
