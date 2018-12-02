@@ -50,4 +50,13 @@ define Device/erlite
 endef
 TARGET_DEVICES += erlite
 
+define Device/vforce1408
+  DEVICE_TITLE := NexG VForce1408
+  DEVICE_DTS_DIR := ../files-4.14/arch/mips/boot/dts/cavium-octeon
+  DEVICE_DTS := nexg_vforce1408
+  DEVICE_PACKAGES += ethtool kmod-hwmon-core kmod-hwmon-lm83 kmod-rtc-ds1307
+  KERNEL := kernel-bin | append-dtb-to-elf | strip-kernel
+endef
+TARGET_DEVICES += vforce1408
+
 $(eval $(call BuildImage))

@@ -1,0 +1,18 @@
+--- a/arch/mips/include/asm/octeon/cvmx-bootinfo.h
++++ b/arch/mips/include/asm/octeon/cvmx-bootinfo.h
+@@ -287,6 +287,7 @@ enum cvmx_board_types_enum {
+ 	CVMX_BOARD_TYPE_CUST_L2_WSTRNSNIC_TX = 10019,
+ 	CVMX_BOARD_TYPE_CUST_L2_WSTRNSNIC_RX = 10020,
+ 	CVMX_BOARD_TYPE_CUST_L2_ZINWELL = 10021,
++	CVMX_BOARD_TYPE_CUST_VF1400 = 11001,
+ 	CVMX_BOARD_TYPE_CUST_DEFINED_MAX = 20000,
+ 
+ 	/*
+@@ -393,6 +394,7 @@ static inline const char *cvmx_board_typ
+ 		ENUM_BRD_TYPE_CASE(CVMX_BOARD_TYPE_CUST_L2_WSTRNSNIC_TX)
+ 		ENUM_BRD_TYPE_CASE(CVMX_BOARD_TYPE_CUST_L2_WSTRNSNIC_RX)
+ 		ENUM_BRD_TYPE_CASE(CVMX_BOARD_TYPE_CUST_L2_ZINWELL)
++		ENUM_BRD_TYPE_CASE(CVMX_BOARD_TYPE_CUST_VF1400)
+ 		ENUM_BRD_TYPE_CASE(CVMX_BOARD_TYPE_CUST_DEFINED_MAX)
+ 
+ 		    /* Customer private range */
