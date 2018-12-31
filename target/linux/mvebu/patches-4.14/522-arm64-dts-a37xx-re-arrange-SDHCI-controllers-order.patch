@@ -1,0 +1,105 @@
+From 9e34242f8817294ec1c2bef7f0c513417cac965e Mon Sep 17 00:00:00 2001
+From: Konstantin Porotchkin <kostap@marvell.com>
+Date: Sun, 25 Nov 2018 18:38:26 +0200
+Subject: [PATCH] arm64: dts: a37xx: re-arrange SDHCI controllers order
+
+Sync the controllers order with uboot settings:
+sdhci-0 is @ 0xd000, sdhci-1 is @ 0xd800.
+
+Signed-off-by: Konstantin Porotchkin <kostap@marvell.com>
+Reviewed-by: Stefan Chulski <stefanc@marvell.com>
+[adapt patch to mainline state]
+Signed-off-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+---
+ arch/arm64/boot/dts/marvell/armada-3720-db.dts   | 10 +++++-----
+ .../boot/dts/marvell/armada-3720-espressobin.dts | 8 ++++----
+ arch/arm64/boot/dts/marvell/armada-37xx.dtsi     | 4 ++--
+ 3 files changed, 11 insertions(+), 11 deletions(-)
+
+--- a/arch/arm64/boot/dts/marvell/armada-3720-db.dts
++++ b/arch/arm64/boot/dts/marvell/armada-3720-db.dts
+@@ -81,9 +81,9 @@
+ 		vcc-supply = <&exp_usb3_vbus>;
+ 	};
+ 
+-	vcc_sd_reg1: regulator {
++	vcc_sd_reg0: regulator {
+ 		compatible = "regulator-gpio";
+-		regulator-name = "vcc_sd1";
++		regulator-name = "vcc_sd0";
+ 		regulator-min-microvolt = <1800000>;
+ 		regulator-max-microvolt = <3300000>;
+ 		regulator-boot-on;
+@@ -163,7 +163,7 @@
+ 	status = "okay";
+ };
+ 
+-&sdhci0 {
++&sdhci1 {
+ 	non-removable;
+ 	bus-width = <8>;
+ 	mmc-ddr-1_8v;
+@@ -173,12 +173,12 @@
+ };
+ 
+ /* SD slot module on CON14(V2.0)/CON15(V1.4) */
+-&sdhci1 {
++&sdhci0 {
+ 	wp-inverted;
+ 	cd-gpios = <&gpiosb 2 GPIO_ACTIVE_LOW>;
+ 	bus-width = <4>;
+ 	marvell,pad-type = "sd";
+-	vqmmc-supply = <&vcc_sd_reg1>;
++	vqmmc-supply = <&vcc_sd_reg0>;
+ 	status = "okay";
+ };
+ 
+--- a/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts
++++ b/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts
+@@ -61,9 +61,9 @@
+ 		reg = <0x00000000 0x00000000 0x00000000 0x20000000>;
+ 	};
+ 
+-	vcc_sd_reg1: regulator {
++	vcc_sd_reg0: regulator {
+ 		compatible = "regulator-gpio";
+-		regulator-name = "vcc_sd1";
++		regulator-name = "vcc_sd0";
+ 		regulator-min-microvolt = <1800000>;
+ 		regulator-max-microvolt = <3300000>;
+ 		regulator-boot-on;
+@@ -87,12 +87,12 @@
+ };
+ 
+ /* J1 */
+-&sdhci1 {
++&sdhci0 {
+ 	wp-inverted;
+ 	bus-width = <4>;
+ 	cd-gpios = <&gpionb 3 GPIO_ACTIVE_LOW>;
+ 	marvell,pad-type = "sd";
+-	vqmmc-supply = <&vcc_sd_reg1>;
++	vqmmc-supply = <&vcc_sd_reg0>;
+ 
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&sdio_pins>;
+--- a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
+@@ -312,7 +312,7 @@
+ 				};
+ 			};
+ 
+-			sdhci1: sdhci@d0000 {
++			sdhci0: sdhci@d0000 {
+ 				compatible = "marvell,armada-3700-sdhci",
+ 					     "marvell,sdhci-xenon";
+ 				reg = <0xd0000 0x300>,
+@@ -323,7 +323,7 @@
+ 				status = "disabled";
+ 			};
+ 
+-			sdhci0: sdhci@d8000 {
++			sdhci1: sdhci@d8000 {
+ 				compatible = "marvell,armada-3700-sdhci",
+ 					     "marvell,sdhci-xenon";
+ 				reg = <0xd8000 0x300>,
