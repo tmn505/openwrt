@@ -1,0 +1,25 @@
+owrt_uenv_ver=1
+old_or_temp_vars=devnum devtype fileaddr filesize root uenv_ver old_or_temp_vars
+boot_a_script=ext4load ${devtype} ${devnum}:${distro_bootpart} ${loadaddr} ${prefix}${script}; run set_owrt_uenv_ver; if test "${script}" = "uEnv.txt"; then env import -t ${loadaddr}; elif test "${script}" = "boot.scr"; then source ${loadaddr}; fi; run upg_owrt_uenv; run boot_owrt
+boot_owrt=setenv bootargs "${console} ${root} rw rootwait ${extra_params}"; ext4load ${devtype} ${devnum}:${distro_bootpart} ${fdt_addr}${fdt_addr_r} ${fdt_name}; ext4load ${devtype} ${devnum}:${distro_bootpart} ${kernel_addr}${kernel_addr_r} ${image_name}; booti ${kernel_addr}${kernel_addr_r} - ${fdt_addr}${fdt_addr_r}
+boot_prefixes=/ /boot/
+boot_scripts=uEnv.txt boot.scr
+boot_targets=usb0 scsi0 mmc0 mmc1
+bootcmd=run distro_bootcmd
+bootcmd_mmc0=setenv devnum 0; run mmc_boot
+bootcmd_mmc1=setenv devnum 1; run mmc_boot
+bootcmd_scsi0=setenv devnum 0; run scsi_boot
+bootcmd_usb0=setenv devnum 0; run usb_boot
+distro_bootcmd=for target in ${boot_targets}; do run bootcmd_${target}; done
+distro_bootpart=1
+extra_params=pci=pcie_bus_safe
+fdt_name=@DTB@.dtb
+image_name=@KERNEL@
+mmc_boot=if mmc dev ${devnum}; then setenv devtype mmc; run scan_dev_for_boot; fi
+root=root=PARTUUID=@ROOT@-02
+scan_dev_for_boot=echo Scanning ${devtype} ${devnum}:${distro_bootpart}...; for prefix in ${boot_prefixes}; do run scan_dev_for_scripts; done;
+scan_dev_for_scripts=for script in ${boot_scripts}; do if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${script}; then echo Found U-Boot script ${prefix}${script}; run boot_a_script; echo SCRIPT FAILED: continuing...; fi; done
+scsi_boot=scsi scan; if scsi dev ${devnum}; then setenv devtype scsi; run scan_dev_for_boot; fi
+set_owrt_uenv_ver=if test -n ${owrt_uenv_ver}; then setenv uenv_ver ${owrt_uenv_ver}; fi
+upg_owrt_uenv=if test ${uenv_ver} != ${owrt_uenv_ver}; then env delete ${old_or_temp_vars}; saveenv; echo U-Boot environment changed to version ${owrt_uenv_ver}; boot; fi
+usb_boot=usb start; if usb dev ${devnum}; then setenv devtype usb; run scan_dev_for_boot; fi

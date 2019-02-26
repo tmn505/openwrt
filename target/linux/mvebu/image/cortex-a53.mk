@@ -5,7 +5,7 @@ define Device/globalscale-espressobin
   KERNEL := kernel-bin
   DEVICE_TITLE := ESPRESSObin (Marvell Armada 3700 Community Board)
   IMAGES := sdcard.img.gz
-  IMAGE/sdcard.img.gz := boot-scr | boot-img-ext4 | sdcard-img-ext4 | gzip | append-metadata
+  IMAGE/sdcard.img.gz := uenv-txt | boot-scr | boot-img-ext4 | sdcard-img-ext4 | gzip | append-metadata
   DEVICE_DTS := armada-3720-espressobin
   DTS_DIR := $(DTS_DIR)/marvell
   SUPPORTED_DEVICES := globalscale,espressobin

@@ -26,6 +26,15 @@ define Build/boot-scr
 	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -d $@-new.bootscript $@-boot.scr
 endef
 
+define Build/uenv-txt
+	rm -f $@-uEnv.txt
+	sed \
+		-e 's#@ROOT@#$(SIGNATURE)#g' \
+		-e 's#@DTB@#$(DEVICE_DTS)#g' \
+		-e 's#@KERNEL@#$(KERNEL_NAME)#g' \
+		$(DEVICE_NAME).uenv > $@-uEnv.txt
+endef
+
 define Build/boot-img
 	rm -f $@.boot
 	mkfs.fat -C $@.boot $$(( $(CONFIG_TARGET_KERNEL_PARTSIZE) * 1024 ))
@@ -40,6 +49,7 @@ define Build/boot-img-ext4
 	$(foreach dts,$(DEVICE_DTS), $(CP) $(DTS_DIR)/$(dts).dtb $@.boot;)
 	$(CP) $(IMAGE_KERNEL) $@.boot/$(KERNEL_NAME)
 	-$(CP) $@-boot.scr $@.boot/boot.scr
+	-$(CP) $@-uEnv.txt $@.boot/uEnv.txt
 	make_ext4fs -J -l $(CONFIG_TARGET_KERNEL_PARTSIZE)M $@.bootimg $@.boot
 endef
 
