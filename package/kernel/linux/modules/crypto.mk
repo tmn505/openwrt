@@ -350,6 +350,34 @@ endef
 $(eval $(call KernelPackage,crypto-hw-padlock))
 
 
+define KernelPackage/crypto-hw-safexcel
+  TITLE:= MVEBU SafeXcel Crypto Engine module
+  DEPENDS:=@LINUX_4_19 @(TARGET_mvebu_cortexa53||TARGET_mvebu_cortexa72) \
+	+kmod-crypto-authenc +kmod-crypto-md5
+  KCONFIG:= \
+	CONFIG_CRYPTO_AES=y \
+	CONFIG_CRYPTO_BLKCIPHER=y \
+	CONFIG_CRYPTO_DEV_SAFEXCEL \
+	CONFIG_CRYPTO_HMAC=y \
+	CONFIG_CRYPTO_HW=y \
+	CONFIG_CRYPTO_SHA256=y \
+	CONFIG_CRYPTO_SHA512=y
+  FILES:=$(LINUX_DIR)/drivers/crypto/inside-secure/crypto_safexcel.ko
+  AUTOLOAD:=$(call AutoLoad,90,crypto_safexcel)
+  $(call AddDepends/crypto)
+endef
+
+define KernelPackage/crypto-hw-safexcel/description
+MVEBU's EIP97 and EIP197 Cryptographic Engine driver designed by
+Inside Secure. This is found on Marvell Armada 37xx/7k/8k SoCs.
+
+Particural version of these IP (EIP197B and EIP197D) require firmware.
+It can be obtained at https://extranet.marvell.com.
+endef
+
+$(eval $(call KernelPackage,crypto-hw-safexcel))
+
+
 define KernelPackage/crypto-hw-talitos
   TITLE:=Freescale integrated security engine (SEC) driver
   DEPENDS:=+kmod-crypto-manager +kmod-crypto-hash +kmod-random-core +kmod-crypto-authenc +kmod-crypto-des
