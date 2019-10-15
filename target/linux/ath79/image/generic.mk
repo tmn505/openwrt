@@ -674,6 +674,18 @@ define Device/rosinson_wr818
 endef
 TARGET_DEVICES += rosinson_wr818
 
+define Device/sitecom_wlr-7100
+  ATH_SOC := ar1022
+  DEVICE_TITLE := Sitecom WLR-7100 v1 002
+  DEVICE_PACKAGES := ath10k-firmware-qca988x-ct kmod-ath10k-ct-smallbuffers kmod-usb2
+  IMAGES += factory.dlf
+  IMAGE/factory.dlf := append-kernel | pad-to $$$$(BLOCKSIZE) | \
+	append-rootfs | pad-rootfs | check-size $$$$(IMAGE_SIZE) | \
+	senao-header -r 0x222 -p 0x53 -t 2
+  IMAGE_SIZE := 7488k
+endef
+TARGET_DEVICES += sitecom_wlr-7100
+
 define Device/wd_mynet-n750
   $(Device/seama)
   ATH_SOC := ar9344

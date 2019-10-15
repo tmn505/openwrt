@@ -119,7 +119,8 @@ case "$FIRMWARE" in
 	iodata,wn-ac1167dgr|\
 	iodata,wn-ac1600dgr|\
 	iodata,wn-ac1600dgr2|\
-	iodata,wn-ag300dgr)
+	iodata,wn-ag300dgr|\
+	sitecom,wlr-7100)
 		ath9k_eeprom_extract "art" 4096 1088
 		ath9k_patch_fw_mac $(mtd_get_mac_ascii u-boot-env ethaddr) 2
 		;;
