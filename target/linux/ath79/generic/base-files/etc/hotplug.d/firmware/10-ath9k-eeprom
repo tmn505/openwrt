@@ -18,6 +18,10 @@ case "$FIRMWARE" in
 	avm,fritzdvbc)
 		caldata_extract_reverse "urlader" 0x1541 0x440
 		;;
+	dell,apl26-0ae)
+		caldata_extract "art" 0x1000 0x440
+		ath9k_patch_mac $(macaddr_add $(mtd_get_mac_binary sysinfo 0x50) +10)
+		;;
 	dlink,dap-2695-a1)
 		caldata_extract "art" 0x1000 0x440
 		ath9k_patch_mac $(mtd_get_mac_ascii bdcfg "wlanmac")

@@ -17,6 +17,12 @@ case "$board" in
 	adtran,bsap1840)
 		macaddr_add "$(mtd_get_mac_binary 'Board data' 2)" $(($PHYNBR * 8 + 1)) > /sys${DEVPATH}/macaddress
 		;;
+	dell,apl26-0ae)
+		# The eeprom on 5 GHz wlan card has MAC address
+		# but OEM ovewrites it, so do we
+		[ "$PHYNBR" -eq 0 ] && \
+			macaddr_add "$(mtd_get_mac_binary sysinfo 0x50)" 2 > /sys${DEVPATH}/macaddress
+		;;
 	dlink,dap-1330-a1|\
 	dlink,dap-1365-a1|\
 	dlink,dch-g020-a1)
