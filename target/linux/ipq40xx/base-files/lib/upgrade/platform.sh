@@ -102,6 +102,12 @@ platform_do_upgrade() {
 	linksys,ea8300)
 		platform_do_upgrade_linksys "$1"
 		;;
+	luma,wrtq-329acn)
+		CI_UBIPART="ubi"
+		CI_KERNPART="kernel1"
+		CI_ROOTPART="ubi_rootfs1"
+		nand_do_upgrade "$1"
+		;;
 	meraki,mr33)
 		CI_KERNPART="part.safe"
 		nand_do_upgrade "$1"
