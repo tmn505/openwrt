@@ -521,7 +521,7 @@ define Device/luma_wrtq-329acn
 	DEVICE_MODEL := Home
 	SOC := qcom-ipq4018
 	DEVICE_DTS := qcom-ipq4018-wrtq-329acn
-	DEVICE_PACKAGES := kmod-ath3k kmod-eeprom-at24 kmod-i2c-gpio uboot-envtools
+	DEVICE_PACKAGES := ipq-wifi-luma_wrtq-329acn kmod-ath3k kmod-eeprom-at24 kmod-i2c-gpio uboot-envtools
 	IMAGE_SIZE := 76632k
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048

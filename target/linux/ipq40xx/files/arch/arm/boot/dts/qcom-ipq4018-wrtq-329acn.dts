@@ -258,8 +258,12 @@
 
 &wifi0 {
 	status = "okay";
+
+	qcom,ath10k-calibration-variant = "Luma-WRTQ-329ACN";
 };
 
 &wifi1 {
 	status = "okay";
+
+	qcom,ath10k-calibration-variant = "Luma-WRTQ-329ACN";
 };
