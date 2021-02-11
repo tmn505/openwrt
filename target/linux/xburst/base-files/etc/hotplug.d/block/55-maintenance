@@ -1,0 +1,30 @@
+#!/bin/ash
+
+[ "$ACTION" = "add" ] || exit 0
+
+. /lib/functions.sh
+. /lib/functions/system.sh
+
+board=$(board_name)
+
+case "$board" in
+	zoomgo,zx10)
+		if [ "$DEVICENAME" = "mmcblk0p1" ]; then
+			mkdir -p /tmp/mnt
+			mount /dev/$DEVICENAME /tmp/mnt
+
+			if [ -f '/tmp/mnt/$$reset$$.bin' ]; then
+				rm -f '/tmp/mnt/$$reset$$.bin'
+				umount -f /tmp/mnt
+
+				umount /overlay
+				jffs2reset
+				reboot now
+
+			else
+				umount -f /tmp/mnt
+				rm -f -R /tmp/mnt
+			fi
+		fi
+		;;
+esac

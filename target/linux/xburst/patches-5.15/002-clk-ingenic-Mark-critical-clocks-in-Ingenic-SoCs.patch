@@ -1,0 +1,237 @@
+From ca54d06fcacfdeb0b07acb4c6469a96fb02a9b44 Mon Sep 17 00:00:00 2001
+From: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+Date: Thu, 28 Apr 2022 17:44:53 +0100
+Subject: [PATCH 2/3] clk: ingenic: Mark critical clocks in Ingenic SoCs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Consider CPU, L2 cache, and memory clocks as critical to prevent
+them -- and the parent clocks -- from being automatically gated,
+since nothing calls clk_get() on these clocks.
+
+Gating the CPU clock hangs the processor, and gating memory makes
+external DRAM inaccessible. Normal kernel code can't hope to deal
+with either situation so those clocks have to be critical.
+
+The L2 cache is required only if caches are running, and could be
+gated if the kernel takes care to flush and disable caches before
+gating the clock. There's no mechanism to do this, and probably no
+reason to do it, so it's simpler to mark the L2 cache as critical.
+
+Signed-off-by: Aidan MacDonald <aidanmacdonald.0x0@gmail.com>
+Reviewed-by: Paul Cercueil <paul@crapouillou.net>
+Link: https://lore.kernel.org/r/20220428164454.17908-3-aidanmacdonald.0x0@gmail.com
+Tested-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com> # On X1000 and X1830
+Signed-off-by: Stephen Boyd <sboyd@kernel.org>
+---
+ drivers/clk/ingenic/jz4725b-cgu.c | 10 ++++++++++
+ drivers/clk/ingenic/jz4740-cgu.c  | 10 ++++++++++
+ drivers/clk/ingenic/jz4760-cgu.c  | 10 ++++++++++
+ drivers/clk/ingenic/jz4770-cgu.c  |  5 +++++
+ drivers/clk/ingenic/jz4780-cgu.c  | 15 +++++++++++++++
+ drivers/clk/ingenic/x1000-cgu.c   | 15 +++++++++++++++
+ drivers/clk/ingenic/x1830-cgu.c   | 11 +++++++++++
+ 7 files changed, 76 insertions(+)
+
+--- a/drivers/clk/ingenic/jz4725b-cgu.c
++++ b/drivers/clk/ingenic/jz4725b-cgu.c
+@@ -87,6 +87,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[JZ4725B_CLK_CCLK] = {
+ 		"cclk", CGU_CLK_DIV,
++		/*
++		 * Disabling the CPU clock or any parent clocks will hang the
++		 * system; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4725B_CLK_PLL, -1, -1, -1 },
+ 		.div = {
+ 			CGU_REG_CPCCR, 0, 1, 4, 22, -1, -1, 0,
+@@ -114,6 +119,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[JZ4725B_CLK_MCLK] = {
+ 		"mclk", CGU_CLK_DIV,
++		/*
++		 * Disabling MCLK or its parents will render DRAM
++		 * inaccessible; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4725B_CLK_PLL, -1, -1, -1 },
+ 		.div = {
+ 			CGU_REG_CPCCR, 12, 1, 4, 22, -1, -1, 0,
+--- a/drivers/clk/ingenic/jz4740-cgu.c
++++ b/drivers/clk/ingenic/jz4740-cgu.c
+@@ -102,6 +102,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[JZ4740_CLK_CCLK] = {
+ 		"cclk", CGU_CLK_DIV,
++		/*
++		 * Disabling the CPU clock or any parent clocks will hang the
++		 * system; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4740_CLK_PLL, -1, -1, -1 },
+ 		.div = {
+ 			CGU_REG_CPCCR, 0, 1, 4, 22, -1, -1, 0,
+@@ -129,6 +134,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[JZ4740_CLK_MCLK] = {
+ 		"mclk", CGU_CLK_DIV,
++		/*
++		 * Disabling MCLK or its parents will render DRAM
++		 * inaccessible; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4740_CLK_PLL, -1, -1, -1 },
+ 		.div = {
+ 			CGU_REG_CPCCR, 12, 1, 4, 22, -1, -1, 0,
+--- a/drivers/clk/ingenic/jz4760-cgu.c
++++ b/drivers/clk/ingenic/jz4760-cgu.c
+@@ -143,6 +143,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[JZ4760_CLK_CCLK] = {
+ 		"cclk", CGU_CLK_DIV,
++		/*
++		 * Disabling the CPU clock or any parent clocks will hang the
++		 * system; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4760_CLK_PLL0, },
+ 		.div = {
+ 			CGU_REG_CPCCR, 0, 1, 4, 22, -1, -1, 0,
+@@ -175,6 +180,11 @@ static const struct ingenic_cgu_clk_info
+ 	},
+ 	[JZ4760_CLK_MCLK] = {
+ 		"mclk", CGU_CLK_DIV,
++		/*
++		 * Disabling MCLK or its parents will render DRAM
++		 * inaccessible; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4760_CLK_PLL0, },
+ 		.div = {
+ 			CGU_REG_CPCCR, 12, 1, 4, 22, -1, -1, 0,
+--- a/drivers/clk/ingenic/jz4770-cgu.c
++++ b/drivers/clk/ingenic/jz4770-cgu.c
+@@ -149,6 +149,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[JZ4770_CLK_CCLK] = {
+ 		"cclk", CGU_CLK_DIV,
++		/*
++		 * Disabling the CPU clock or any parent clocks will hang the
++		 * system; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4770_CLK_PLL0, },
+ 		.div = {
+ 			CGU_REG_CPCCR, 0, 1, 4, 22, -1, -1, 0,
+--- a/drivers/clk/ingenic/jz4780-cgu.c
++++ b/drivers/clk/ingenic/jz4780-cgu.c
+@@ -341,12 +341,22 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[JZ4780_CLK_CPU] = {
+ 		"cpu", CGU_CLK_DIV,
++		/*
++		 * Disabling the CPU clock or any parent clocks will hang the
++		 * system; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4780_CLK_CPUMUX, -1, -1, -1 },
+ 		.div = { CGU_REG_CLOCKCONTROL, 0, 1, 4, 22, -1, -1 },
+ 	},
+ 
+ 	[JZ4780_CLK_L2CACHE] = {
+ 		"l2cache", CGU_CLK_DIV,
++		/*
++		 * The L2 cache clock is critical if caches are enabled and
++		 * disabling it or any parent clocks will hang the system.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { JZ4780_CLK_CPUMUX, -1, -1, -1 },
+ 		.div = { CGU_REG_CLOCKCONTROL, 4, 1, 4, -1, -1, -1 },
+ 	},
+@@ -380,6 +390,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[JZ4780_CLK_DDR] = {
+ 		"ddr", CGU_CLK_MUX | CGU_CLK_DIV,
++		/*
++		 * Disabling DDR clock or its parents will render DRAM
++		 * inaccessible; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { -1, JZ4780_CLK_SCLKA, JZ4780_CLK_MPLL, -1 },
+ 		.mux = { CGU_REG_DDRCDR, 30, 2 },
+ 		.div = { CGU_REG_DDRCDR, 0, 1, 4, 29, 28, 27 },
+--- a/drivers/clk/ingenic/x1000-cgu.c
++++ b/drivers/clk/ingenic/x1000-cgu.c
+@@ -251,6 +251,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[X1000_CLK_CPU] = {
+ 		"cpu", CGU_CLK_DIV | CGU_CLK_GATE,
++		/*
++		 * Disabling the CPU clock or any parent clocks will hang the
++		 * system; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { X1000_CLK_CPUMUX, -1, -1, -1 },
+ 		.div = { CGU_REG_CPCCR, 0, 1, 4, 22, -1, -1 },
+ 		.gate = { CGU_REG_CLKGR, 30 },
+@@ -258,6 +263,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[X1000_CLK_L2CACHE] = {
+ 		"l2cache", CGU_CLK_DIV,
++		/*
++		 * The L2 cache clock is critical if caches are enabled and
++		 * disabling it or any parent clocks will hang the system.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { X1000_CLK_CPUMUX, -1, -1, -1 },
+ 		.div = { CGU_REG_CPCCR, 4, 1, 4, 22, -1, -1 },
+ 	},
+@@ -290,6 +300,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[X1000_CLK_DDR] = {
+ 		"ddr", CGU_CLK_MUX | CGU_CLK_DIV | CGU_CLK_GATE,
++		/*
++		 * Disabling DDR clock or its parents will render DRAM
++		 * inaccessible; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { -1, X1000_CLK_SCLKA, X1000_CLK_MPLL, -1 },
+ 		.mux = { CGU_REG_DDRCDR, 30, 2 },
+ 		.div = { CGU_REG_DDRCDR, 0, 1, 4, 29, 28, 27 },
+--- a/drivers/clk/ingenic/x1830-cgu.c
++++ b/drivers/clk/ingenic/x1830-cgu.c
+@@ -225,6 +225,7 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[X1830_CLK_CPU] = {
+ 		"cpu", CGU_CLK_DIV | CGU_CLK_GATE,
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { X1830_CLK_CPUMUX, -1, -1, -1 },
+ 		.div = { CGU_REG_CPCCR, 0, 1, 4, 22, -1, -1 },
+ 		.gate = { CGU_REG_CLKGR1, 15 },
+@@ -232,6 +233,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[X1830_CLK_L2CACHE] = {
+ 		"l2cache", CGU_CLK_DIV,
++		/*
++		 * The L2 cache clock is critical if caches are enabled and
++		 * disabling it or any parent clocks will hang the system.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { X1830_CLK_CPUMUX, -1, -1, -1 },
+ 		.div = { CGU_REG_CPCCR, 4, 1, 4, 22, -1, -1 },
+ 	},
+@@ -264,6 +270,11 @@ static const struct ingenic_cgu_clk_info
+ 
+ 	[X1830_CLK_DDR] = {
+ 		"ddr", CGU_CLK_MUX | CGU_CLK_DIV | CGU_CLK_GATE,
++		/*
++		 * Disabling DDR clock or its parents will render DRAM
++		 * inaccessible; mark it critical.
++		 */
++		.flags = CLK_IS_CRITICAL,
+ 		.parents = { -1, X1830_CLK_SCLKA, X1830_CLK_MPLL, -1 },
+ 		.mux = { CGU_REG_DDRCDR, 30, 2 },
+ 		.div = { CGU_REG_DDRCDR, 0, 1, 4, 29, 28, 27 },
