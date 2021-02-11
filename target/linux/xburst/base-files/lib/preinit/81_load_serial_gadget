@@ -1,0 +1,11 @@
+. /lib/functions.sh
+
+load_serial_gadget() {
+	case $(board_name) in
+	zoomgo,zx10)
+		modprobe g_serial
+		;;
+	esac
+}
+
+boot_hook_add preinit_main load_serial_gadget
