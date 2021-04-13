@@ -27,7 +27,7 @@ define Device/zoomgo_zx10
   DEVICE_MODEL := Media Stick
   DEVICE_ALT0_VENDOR := Damai
   DEVICE_ALT0_MODEL := NW5030
-  DEVICE_PACKAGES := kmod-brcmfmac kmod-fs-ext4 kmod-fs-vfat wpad-basic-wolfssl
+  DEVICE_PACKAGES := cypress-firmware-43430-sdio kmod-brcmfmac kmod-fs-ext4 kmod-fs-vfat wpad-basic-wolfssl
   IMAGES := factory.bin sysupgrade.bin
   IMAGE/factory.bin = append-kernel | append-rootfs | pad-rootfs | check-size
   IMAGE/sysupgrade.bin = append-rootfs | pad-rootfs | sysupgrade-tar rootfs=$$$$@ | append-metadata | check-size
