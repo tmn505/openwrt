@@ -1,0 +1,7 @@
+part uuid ${devtype} ${devnum}:2 ptuuid
+
+setenv bootargs "${bootargs} root=PARTUUID=${ptuuid} rw rootwait"
+
+load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} uImage
+
+bootm ${kernel_addr_r}
