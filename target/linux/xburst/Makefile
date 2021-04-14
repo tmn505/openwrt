@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 ARCH := mipsel
 BOARD := xburst
 BOARDNAME := Ingenic XBurst
-FEATURES := dt fpu gpio ramdisk rtc small_flash squashfs usb usbgadget source-only
+FEATURES := dt fpu gpio ramdisk rtc squashfs usb usbgadget source-only
 CPU_TYPE := xburst
 
 KERNEL_PATCHVER := 5.15
