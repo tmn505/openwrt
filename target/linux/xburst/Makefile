@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 ARCH := mipsel
 BOARD := xburst
 BOARDNAME := Ingenic XBurst
-FEATURES := dt fpu gpio ramdisk rtc small_flash squashfs usb usbgadget source-only
+FEATURES := boot-part dt fpu gpio ramdisk rootfs-part rtc small_flash squashfs usb usbgadget source-only
 CPU_TYPE := xburst
 
 KERNEL_PATCHVER := 5.15
@@ -19,6 +19,7 @@ endef
 
 include $(INCLUDE_DIR)/target.mk
 
-DEFAULT_PACKAGES += kmod-usb-dwc2 kmod-usb-gadget-serial kmod-usb-phy-ingenic
+DEFAULT_PACKAGES += e2fsprogs kmod-fs-ext4 kmod-fs-f2fs kmod-fs-vfat kmod-loop \
+	kmod-usb-dwc2 kmod-usb-gadget-serial kmod-usb-phy-ingenic mkf2fs partx-utils
 
 $(eval $(call BuildTarget))
