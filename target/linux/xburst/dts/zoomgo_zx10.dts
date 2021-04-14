@@ -74,7 +74,7 @@
 				#size-cells = <1>;
 
 				partition@0 {
-					label = "bootloader";
+					label = "u-boot";
 					reg = <0x000000 0x030000>;
 					read-only;
 				};
@@ -85,29 +85,14 @@
 					read-only;
 				};
 
-				/*
-				 * Last 32B must be a MD5 sum of first 256KiB.
-				 * It's checked by U-Boot. If it fails, the
-				 * kernel form backup partition is executed.
-				 */
 				partition@40000 {
-					label = "kernel";
-					reg = <0x040000 0x200000>;
-				};
-
-				partition@240000 {
-					label = "rootfs";
-					reg = <0x240000 0x800000>;
-				};
-
-				partition@a40000 {
-					label = "backup";
-					reg = <0xa40000 0x5b0000>;
-					read-only;
+					compatible = "denx,uimage";
+					label = "firmware";
+					reg = <0x040000 0xfb0000>;
 				};
 
 				partition@ff0000 {
-					label = "airdisk";
+					label = "u-boot-env";
 					reg = <0xff0000 0x010000>;
 				};
 			};
