@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 ARCH := mipsel
 BOARD := xburst
 BOARDNAME := Ingenic XBurst
-FEATURES := dt fpu gpio ramdisk rtc small_flash squashfs usb usbgadget source-only
+FEATURES := boot-part dt fpu gpio ramdisk rootfs-part rtc small_flash squashfs usb usbgadget source-only
 CPU_TYPE := xburst
 
 KERNEL_PATCHVER := 5.10
@@ -18,5 +18,7 @@ define Target/Description
 endef
 
 include $(INCLUDE_DIR)/target.mk
+
+DEFAULT_PACKAGES += e2fsprogs mkf2fs partx-utils
 
 $(eval $(call BuildTarget))

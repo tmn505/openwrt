@@ -5,6 +5,25 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
+define Build/xburst-sdcard
+	rm -fR $@.boot
+	mkdir -p $@.boot
+
+	$(CP) $(IMAGE_KERNEL) $@.boot/uImage
+
+	mkimage -A mips -O linux -T script -C none \
+		-n '$(DEVICE_TITLE) OpenWrt bootscript' \
+		-d bootscript.txt \
+		$@.boot/boot.scr
+
+	SIGNATURE="$(IMG_PART_SIGNATURE)" \
+	$(SCRIPT_DIR)/gen_image_generic.sh \
+		$@ \
+		$(CONFIG_TARGET_KERNEL_PARTSIZE) $@.boot \
+		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $(IMAGE_ROOTFS) \
+		2048
+endef
+
 DTS_DIR := $(DTS_DIR)/ingenic
 
 define Device/Default
@@ -24,9 +43,10 @@ define Device/zoomgo_zx10
   DEVICE_ALT0_VENDOR := Damai
   DEVICE_ALT0_MODEL := NW5030
   DEVICE_PACKAGES := cypress-firmware-43430-sdio kmod-brcmfmac kmod-fs-ext4 kmod-fs-vfat wpad-basic-wolfssl
-  IMAGES := factory.bin sysupgrade.bin
+  IMAGES := factory.bin sysupgrade.bin sdcard.img.gz
   IMAGE/factory.bin = append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | check-size 10240k
   IMAGE/sysupgrade.bin = append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | append-metadata | check-size
+  IMAGE/sdcard.img.gz = xburst-sdcard | gzip
   IMAGE_SIZE := 16064k
   KERNEL_SIZE := 8192k
   UIMAGE_NAME := NW5030
