@@ -16,11 +16,13 @@ define Build/xburst-sdcard
 		-d bootscript.txt \
 		$@.boot/boot.scr
 
+	$(CP) $@ $@.rootfs
+
 	SIGNATURE="$(IMG_PART_SIGNATURE)" \
 	$(SCRIPT_DIR)/gen_image_generic.sh \
 		$@ \
 		$(CONFIG_TARGET_KERNEL_PARTSIZE) $@.boot \
-		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $(IMAGE_ROOTFS) \
+		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $@.rootfs \
 		2048
 endef
 
@@ -42,11 +44,11 @@ define Device/zoomgo_zx10
   DEVICE_MODEL := Media Stick
   DEVICE_ALT0_VENDOR := Damai
   DEVICE_ALT0_MODEL := NW5030
-  DEVICE_PACKAGES := cypress-firmware-43430-sdio kmod-brcmfmac kmod-fs-ext4 kmod-fs-vfat wpad-basic-wolfssl
+  DEVICE_PACKAGES := cypress-firmware-43430-sdio kmod-brcmfmac kmod-fs-vfat wpad-basic-wolfssl
   IMAGES := factory.bin sysupgrade.bin sdcard.img.gz
   IMAGE/factory.bin = append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | check-size 10240k
   IMAGE/sysupgrade.bin = append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | append-metadata | check-size
-  IMAGE/sdcard.img.gz = xburst-sdcard | gzip
+  IMAGE/sdcard.img.gz = append-rootfs | pad-extra 128k | xburst-sdcard | gzip | append-metadata
   IMAGE_SIZE := 16064k
   KERNEL_SIZE := 8192k
   UIMAGE_NAME := NW5030
