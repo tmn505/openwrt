@@ -59,76 +59,6 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 	};
-
-	spi-flash {
-		compatible = "spi-gpio";
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		sck-gpios = <&gpa 26 GPIO_ACTIVE_HIGH>;
-		miso-gpios = <&gpa 28 GPIO_ACTIVE_HIGH>;
-		mosi-gpios = <&gpa 29 GPIO_ACTIVE_HIGH>;
-		cs-gpios = <&gpa 27 GPIO_ACTIVE_LOW>;
-		num-chipselects = <1>;
-
-		flash@0 {
-			compatible = "jedec,spi-nor";
-			reg = <0>;
-			spi-max-frequency = <12000000>;
-
-			partitions {
-				compatible = "fixed-partitions";
-				#address-cells = <1>;
-				#size-cells = <1>;
-
-				partition@0 {
-					label = "bootloader";
-					reg = <0x000000 0x030000>;
-					read-only;
-				};
-
-				partition@30000 {
-					label = "config";
-					reg = <0x030000 0x010000>;
-					read-only;
-
-					compatible = "nvmem-cells";
-					#address-cells = <1>;
-					#size-cells = <1>;
-
-					macaddr_wlan: macaddr@ca0 {
-						reg = <0xca0 0x6>;
-					};
-				};
-
-				/*
-				 * Last 32B must be a MD5 sum of first 256KiB.
-				 * It's checked by U-Boot. If it fails, the
-				 * kernel from backup partition is executed.
-				 */
-				partition@40000 {
-					label = "kernel";
-					reg = <0x040000 0x200000>;
-				};
-
-				partition@240000 {
-					label = "rootfs";
-					reg = <0x240000 0x800000>;
-				};
-
-				partition@a40000 {
-					label = "backup";
-					reg = <0xa40000 0x5b0000>;
-					read-only;
-				};
-
-				partition@ff0000 {
-					label = "airdisk";
-					reg = <0xff0000 0x010000>;
-				};
-			};
-		};
-	};
 };
 
 &cgu {
@@ -136,8 +66,9 @@
 	 * Use the 32.768 kHz oscillator as the parent of the RTC for a higher
 	 * precision.
 	 */
-	assigned-clocks = <&cgu X1000_CLK_RTC>;
-	assigned-clock-parents = <&cgu X1000_CLK_RTCLK>;
+	assigned-clocks = <&cgu X1000_CLK_SSIPLL>, <&cgu X1000_CLK_RTC>;
+	assigned-clock-parents = <&cgu X1000_CLK_MPLL>, <&cgu X1000_CLK_RTCLK>;
+	assigned-clock-rates = <100000000>;
 };
 
 &exclk {
@@ -222,10 +153,90 @@
 		groups = "mmc1-1bit", "mmc1-4bit";
 		bias-disable;
 	};
+
+	pins_sfc: sfc {
+		function = "sfc";
+		groups = "sfc-data", "sfc-clk", "sfc-ce";
+		bias-disable;
+	};
 };
 
 &rng {
 	status = "okay";
+};
+
+&sfc {
+	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	spi-max-frequency = <150000000>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pins_sfc>;
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <4>;
+		spi-max-frequency = <75000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "bootloader";
+				reg = <0x000000 0x030000>;
+				read-only;
+			};
+
+			partition@30000 {
+				label = "config";
+				reg = <0x030000 0x010000>;
+				read-only;
+
+				compatible = "nvmem-cells";
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				macaddr_wlan: macaddr@ca0 {
+					reg = <0xca0 0x6>;
+				};
+			};
+
+			/*
+			 * Last 32B must be a MD5 sum of first 256KiB.
+			 * It's checked by U-Boot. If it fails, the
+			 * kernel from backup partition is executed.
+			 */
+			partition@40000 {
+				label = "kernel";
+				reg = <0x040000 0x200000>;
+			};
+
+			partition@240000 {
+				label = "rootfs";
+				reg = <0x240000 0x800000>;
+			};
+
+			partition@a40000 {
+				label = "backup";
+				reg = <0xa40000 0x5b0000>;
+				read-only;
+			};
+
+			partition@ff0000 {
+				label = "airdisk";
+				reg = <0xff0000 0x010000>;
+			};
+		};
+	};
 };
 
 &uart2 {

@@ -1,0 +1,186 @@
+From 0a886fd4ca91b7786c87951c8085c6d3b022644f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E5=91=A8=E7=90=B0=E6=9D=B0=20=28Zhou=20Yanjie=29?=
+ <zhouyanjie@wanyeetech.com>
+Date: Wed, 6 Apr 2022 01:00:47 +0800
+Subject: [PATCH 3/3] MIPS: Ingenic: Add SFC nodes for Ingenic SoCs and boards.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+1.Add SFC nodes for the X1000 SoC and the X1830 SoC.
+2.Add SFC nodes for the CU1000-Neo board and the CU1830-Neo board.
+
+Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
+---
+ arch/mips/boot/dts/ingenic/cu1000-neo.dts | 44 +++++++++++++++++++++++++++++--
+ arch/mips/boot/dts/ingenic/cu1830-neo.dts | 39 +++++++++++++++++++++++++++
+ arch/mips/boot/dts/ingenic/x1000.dtsi     | 13 +++++++++
+ arch/mips/boot/dts/ingenic/x1830.dtsi     | 13 +++++++++
+ 4 files changed, 107 insertions(+), 2 deletions(-)
+
+--- a/arch/mips/boot/dts/ingenic/cu1000-neo.dts
++++ b/arch/mips/boot/dts/ingenic/cu1000-neo.dts
+@@ -84,8 +84,9 @@
+ 	 * Use the 32.768 kHz oscillator as the parent of the RTC for a higher
+ 	 * precision.
+ 	 */
+-	assigned-clocks = <&cgu X1000_CLK_RTC>;
+-	assigned-clock-parents = <&cgu X1000_CLK_RTCLK>;
++	assigned-clocks = <&cgu X1000_CLK_SSIPLL>, <&cgu X1000_CLK_RTC>;
++	assigned-clock-parents = <&cgu X1000_CLK_MPLL>, <&cgu X1000_CLK_RTCLK>;
++	assigned-clock-rates = <100000000>;
+ };
+ 
+ &ost {
+@@ -115,6 +116,39 @@
+ 	};
+ };
+ 
++&sfc {
++	status = "okay";
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++	spi-max-frequency = <150000000>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_sfc>;
++
++	spi-flash@0 {
++		compatible = "jedec,spi-nor";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0>;
++
++		spi-rx-bus-width = <4>;
++		spi-tx-bus-width = <4>;
++		spi-max-frequency = <75000000>;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			partition@0 {
++				label = "whole-flash";
++				reg = <0x0 0x2000000>;
++			};
++		};
++	};
++};
++
+ &msc0 {
+ 	status = "okay";
+ 
+@@ -198,6 +232,12 @@
+ 		bias-pull-up;
+ 	};
+ 
++	pins_sfc: sfc {
++		function = "sfc";
++		groups = "sfc-data", "sfc-clk", "sfc-ce";
++		bias-disable;
++	};
++
+ 	pins_msc0: msc0 {
+ 		function = "mmc0";
+ 		groups = "mmc0-1bit", "mmc0-4bit", "mmc0-8bit";
+--- a/arch/mips/boot/dts/ingenic/cu1830-neo.dts
++++ b/arch/mips/boot/dts/ingenic/cu1830-neo.dts
+@@ -119,6 +119,39 @@
+ 	status = "okay";
+ };
+ 
++&sfc {
++	status = "okay";
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++	spi-max-frequency = <150000000>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_sfc>;
++
++	spi-flash@0 {
++		compatible = "jedec,spi-nor";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0>;
++
++		spi-rx-bus-width = <4>;
++		spi-tx-bus-width = <4>;
++		spi-max-frequency = <75000000>;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			partition@0 {
++				label = "whole-flash";
++				reg = <0x0 0x1000000>;
++			};
++		};
++	};
++};
++
+ &msc0 {
+ 	status = "okay";
+ 
+@@ -202,6 +235,12 @@
+ 		bias-pull-up;
+ 	};
+ 
++	pins_sfc: sfc {
++		function = "sfc";
++		groups = "sfc-data", "sfc-clk", "sfc-ce";
++		bias-disable;
++	};
++
+ 	pins_msc0: msc0 {
+ 		function = "mmc0";
+ 		groups = "mmc0-1bit", "mmc0-4bit";
+--- a/arch/mips/boot/dts/ingenic/x1000.dtsi
++++ b/arch/mips/boot/dts/ingenic/x1000.dtsi
+@@ -300,6 +300,19 @@
+ 		clocks = <&cgu X1000_CLK_PDMA>;
+ 	};
+ 
++	sfc: spi@13440000 {
++		compatible = "ingenic,x1000-sfc";
++		reg = <0x13440000 0x1000>;
++
++		interrupt-parent = <&intc>;
++		interrupts = <7>;
++
++		clocks = <&cgu X1000_CLK_SFC>;
++		clock-names = "sfc";
++
++		status = "disabled";
++	};
++
+ 	msc0: mmc@13450000 {
+ 		compatible = "ingenic,x1000-mmc";
+ 		reg = <0x13450000 0x1000>;
+--- a/arch/mips/boot/dts/ingenic/x1830.dtsi
++++ b/arch/mips/boot/dts/ingenic/x1830.dtsi
+@@ -289,6 +289,19 @@
+ 		clocks = <&cgu X1830_CLK_PDMA>;
+ 	};
+ 
++	sfc: spi@13440000 {
++		compatible = "ingenic,x1830-sfc";
++		reg = <0x13440000 0x1000>;
++
++		interrupt-parent = <&intc>;
++		interrupts = <7>;
++
++		clocks = <&cgu X1830_CLK_SFC>;
++		clock-names = "sfc";
++
++		status = "disabled";
++	};
++
+ 	msc0: mmc@13450000 {
+ 		compatible = "ingenic,x1830-mmc", "ingenic,x1000-mmc";
+ 		reg = <0x13450000 0x1000>;
