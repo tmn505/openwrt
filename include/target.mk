@@ -278,6 +278,7 @@ ifeq ($(DUMP),1)
     CPU_TYPE ?= generic
     CPU_CFLAGS_generic = -mcpu=generic
     CPU_CFLAGS_cortex-a53 = -mcpu=cortex-a53
+    CPU_CFLAGS_cortex-a57 = -mcpu=cortex-a57
   endif
   ifeq ($(ARCH),arc)
     CPU_TYPE ?= arc700
