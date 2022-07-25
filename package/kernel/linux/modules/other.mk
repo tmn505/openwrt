@@ -909,6 +909,25 @@ endef
 $(eval $(call KernelPackage,serial-8250-exar))
 
 
+define KernelPackage/serial-sc16is7xx-spi
+  SUBMENU:=$(OTHER_MENU)
+  TITLE:=NXP SC16IS7xx expanders (SPI)
+  KCONFIG:= \
+	CONFIG_SERIAL_SC16IS7XX \
+	CONFIG_SERIAL_SC16IS7XX_I2C=n \
+	CONFIG_SERIAL_SC16IS7XX_SPI=y
+  FILES:=$(LINUX_DIR)/drivers/tty/serial/sc16is7xx.ko
+  AUTOLOAD:=$(call AutoProbe,sc16is7xx,)
+  DEPENDS:=+kmod-regmap-spi +kmod-spi-dev
+endef
+
+define KernelPackage/serial-sc16is7xx-spi/description
+ Kernel module for SC16IS7xx on SPI bus
+endef
+
+$(eval $(call KernelPackage,serial-sc16is7xx-spi))
+
+
 define KernelPackage/regmap-core
   SUBMENU:=$(OTHER_MENU)
   TITLE:=Generic register map support
