@@ -1,0 +1,51 @@
+From e64e9ad267ca22ee3db6f9d7a02dc8400a23d4c8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E5=91=A8=E7=90=B0=E6=9D=B0=20=28Zhou=20Yanjie=29?=
+ <zhouyanjie@wanyeetech.com>
+Date: Sat, 23 Apr 2022 22:38:43 +0800
+Subject: [PATCH] spi: ingenic: Add support for use GPIO as chip select line.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Add support for using GPIOs as chip select lines on Ingenic SoCs.
+
+Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
+Reviewed-by: Paul Cercueil <paul@crapouillou.net>
+Link: https://lore.kernel.org/r/1650724725-93758-2-git-send-email-zhouyanjie@wanyeetech.com
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ drivers/spi/spi-ingenic.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+--- a/drivers/spi/spi-ingenic.c
++++ b/drivers/spi/spi-ingenic.c
+@@ -380,7 +380,7 @@ static int spi_ingenic_probe(struct plat
+ 	struct spi_controller *ctlr;
+ 	struct ingenic_spi *priv;
+ 	void __iomem *base;
+-	int ret;
++	int num_cs, ret;
+ 
+ 	pdata = of_device_get_match_data(dev);
+ 	if (!pdata) {
+@@ -416,6 +416,9 @@ static int spi_ingenic_probe(struct plat
+ 	if (IS_ERR(priv->flen_field))
+ 		return PTR_ERR(priv->flen_field);
+ 
++	if (device_property_read_u32(dev, "num-cs", &num_cs))
++		num_cs = 2;
++
+ 	platform_set_drvdata(pdev, ctlr);
+ 
+ 	ctlr->prepare_transfer_hardware = spi_ingenic_prepare_hardware;
+@@ -429,7 +432,9 @@ static int spi_ingenic_probe(struct plat
+ 	ctlr->bits_per_word_mask = pdata->bits_per_word_mask;
+ 	ctlr->min_speed_hz = 7200;
+ 	ctlr->max_speed_hz = 54000000;
+-	ctlr->num_chipselect = 2;
++	ctlr->use_gpio_descriptors = true;
++	ctlr->max_native_cs = 2;
++	ctlr->num_chipselect = num_cs;
+ 	ctlr->dev.of_node = pdev->dev.of_node;
+ 
+ 	if (spi_ingenic_request_dma(ctlr, dev))

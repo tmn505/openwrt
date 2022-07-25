@@ -20,7 +20,7 @@ Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
 
 --- a/arch/mips/boot/dts/ingenic/cu1000-neo.dts
 +++ b/arch/mips/boot/dts/ingenic/cu1000-neo.dts
-@@ -115,6 +115,39 @@
+@@ -112,6 +112,39 @@
  	};
  };
  
@@ -60,7 +60,7 @@ Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
  &msc0 {
  	status = "okay";
  
-@@ -198,6 +231,12 @@
+@@ -201,6 +234,12 @@
  		bias-pull-up;
  	};
  
@@ -75,7 +75,7 @@ Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
  		groups = "mmc0-1bit", "mmc0-4bit", "mmc0-8bit";
 --- a/arch/mips/boot/dts/ingenic/cu1830-neo.dts
 +++ b/arch/mips/boot/dts/ingenic/cu1830-neo.dts
-@@ -119,6 +119,39 @@
+@@ -115,6 +115,39 @@
  	status = "okay";
  };
  
@@ -115,7 +115,7 @@ Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
  &msc0 {
  	status = "okay";
  
-@@ -202,6 +235,12 @@
+@@ -204,6 +237,12 @@
  		bias-pull-up;
  	};
  
@@ -130,7 +130,7 @@ Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
  		groups = "mmc0-1bit", "mmc0-4bit";
 --- a/arch/mips/boot/dts/ingenic/x1000.dtsi
 +++ b/arch/mips/boot/dts/ingenic/x1000.dtsi
-@@ -300,6 +300,19 @@
+@@ -320,6 +320,19 @@
  		clocks = <&cgu X1000_CLK_PDMA>;
  	};
  
@@ -152,7 +152,7 @@ Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
  		reg = <0x13450000 0x1000>;
 --- a/arch/mips/boot/dts/ingenic/x1830.dtsi
 +++ b/arch/mips/boot/dts/ingenic/x1830.dtsi
-@@ -289,6 +289,19 @@
+@@ -328,6 +328,19 @@
  		clocks = <&cgu X1830_CLK_PDMA>;
  	};
  

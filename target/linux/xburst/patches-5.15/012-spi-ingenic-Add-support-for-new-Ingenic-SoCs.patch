@@ -1,0 +1,158 @@
+From 6d72b11403549a34b485d2fe323c8a57b4dd1958 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E5=91=A8=E7=90=B0=E6=9D=B0=20=28Zhou=20Yanjie=29?=
+ <zhouyanjie@wanyeetech.com>
+Date: Sat, 23 Apr 2022 22:38:45 +0800
+Subject: [PATCH] spi: ingenic: Add support for new Ingenic SoCs.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+1.Since it would be dangerous to specify a newer SoC's compatible
+  string as the fallback of an older SoC's compatible string, we
+  add support for the "ingenic,jz4775-spi" compatible string in
+  the driver.
+
+  This will permit to support the JZ4775 by having:
+  compatible = "ingenic,jz4775-spi";
+
+  Instead of doing:
+  compatible = "ingenic,jz4775-spi", "ingenic,jz4780-spi";
+
+2.Add support for probing the spi-ingenic driver on the X1000 SoC
+  from Ingenic. From the X1000 SoC onwards, the maximum frequency
+  allowed by the SSI module of Ingenic SoCs has been changed from
+  54MHz to 50MHz. So "max_speed_hz" is introduced in "jz_soc_info"
+  to set different maximum frequency values.
+
+3.Add support for probing the spi-ingenic driver on the X2000 SoC
+  from Ingenic. The X2000 SoC has only one native chip select line,
+  so "max_native_cs" is introduced in "jz_soc_info" to set different
+  maximum number of native chip select lines.
+
+4.Because of the introduction of support for the X-series SoCs, the
+  current driver is not only applicable to the JZ-series SoCs, so
+  the description texts has been modified to avoid misunderstanding.
+
+Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
+Reviewed-by: Paul Cercueil <paul@crapouillou.net>
+Link: https://lore.kernel.org/r/1650724725-93758-4-git-send-email-zhouyanjie@wanyeetech.com
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ drivers/spi/Kconfig       |  4 ++--
+ drivers/spi/spi-ingenic.c | 42 ++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 39 insertions(+), 7 deletions(-)
+
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -407,10 +407,10 @@ config SPI_IMX
+ 	  This enables support for the Freescale i.MX SPI controllers.
+ 
+ config SPI_INGENIC
+-	tristate "Ingenic JZ47xx SoCs SPI controller"
++	tristate "Ingenic SoCs SPI controller"
+ 	depends on MACH_INGENIC || COMPILE_TEST
+ 	help
+-	  This enables support for the Ingenic JZ47xx SoCs SPI controller.
++	  This enables support for the Ingenic SoCs SPI controller.
+ 
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called spi-ingenic.
+--- a/drivers/spi/spi-ingenic.c
++++ b/drivers/spi/spi-ingenic.c
+@@ -1,8 +1,9 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * SPI bus driver for the Ingenic JZ47xx SoCs
++ * SPI bus driver for the Ingenic SoCs
+  * Copyright (c) 2017-2021 Artur Rojek <contact@artur-rojek.eu>
+  * Copyright (c) 2017-2021 Paul Cercueil <paul@crapouillou.net>
++ * Copyright (c) 2022 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
+  */
+ 
+ #include <linux/clk.h>
+@@ -52,6 +53,9 @@ struct jz_soc_info {
+ 	u32 bits_per_word_mask;
+ 	struct reg_field flen_field;
+ 	bool has_trendian;
++
++	unsigned int max_speed_hz;
++	unsigned int max_native_cs;
+ };
+ 
+ struct ingenic_spi {
+@@ -417,7 +421,7 @@ static int spi_ingenic_probe(struct plat
+ 		return PTR_ERR(priv->flen_field);
+ 
+ 	if (device_property_read_u32(dev, "num-cs", &num_cs))
+-		num_cs = 2;
++		num_cs = pdata->max_native_cs;
+ 
+ 	platform_set_drvdata(pdev, ctlr);
+ 
+@@ -431,9 +435,9 @@ static int spi_ingenic_probe(struct plat
+ 	ctlr->max_dma_len = SPI_INGENIC_FIFO_SIZE;
+ 	ctlr->bits_per_word_mask = pdata->bits_per_word_mask;
+ 	ctlr->min_speed_hz = 7200;
+-	ctlr->max_speed_hz = 54000000;
++	ctlr->max_speed_hz = pdata->max_speed_hz;
+ 	ctlr->use_gpio_descriptors = true;
+-	ctlr->max_native_cs = 2;
++	ctlr->max_native_cs = pdata->max_native_cs;
+ 	ctlr->num_chipselect = num_cs;
+ 	ctlr->dev.of_node = pdev->dev.of_node;
+ 
+@@ -457,17 +461,44 @@ static const struct jz_soc_info jz4750_s
+ 	.bits_per_word_mask = SPI_BPW_RANGE_MASK(2, 17),
+ 	.flen_field = REG_FIELD(REG_SSICR1, 4, 7),
+ 	.has_trendian = false,
++
++	.max_speed_hz = 54000000,
++	.max_native_cs = 2,
+ };
+ 
+ static const struct jz_soc_info jz4780_soc_info = {
+ 	.bits_per_word_mask = SPI_BPW_RANGE_MASK(2, 32),
+ 	.flen_field = REG_FIELD(REG_SSICR1, 3, 7),
+ 	.has_trendian = true,
++
++	.max_speed_hz = 54000000,
++	.max_native_cs = 2,
++};
++
++static const struct jz_soc_info x1000_soc_info = {
++	.bits_per_word_mask = SPI_BPW_RANGE_MASK(2, 32),
++	.flen_field = REG_FIELD(REG_SSICR1, 3, 7),
++	.has_trendian = true,
++
++	.max_speed_hz = 50000000,
++	.max_native_cs = 2,
++};
++
++static const struct jz_soc_info x2000_soc_info = {
++	.bits_per_word_mask = SPI_BPW_RANGE_MASK(2, 32),
++	.flen_field = REG_FIELD(REG_SSICR1, 3, 7),
++	.has_trendian = true,
++
++	.max_speed_hz = 50000000,
++	.max_native_cs = 1,
+ };
+ 
+ static const struct of_device_id spi_ingenic_of_match[] = {
+ 	{ .compatible = "ingenic,jz4750-spi", .data = &jz4750_soc_info },
++	{ .compatible = "ingenic,jz4775-spi", .data = &jz4780_soc_info },
+ 	{ .compatible = "ingenic,jz4780-spi", .data = &jz4780_soc_info },
++	{ .compatible = "ingenic,x1000-spi", .data = &x1000_soc_info },
++	{ .compatible = "ingenic,x2000-spi", .data = &x2000_soc_info },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, spi_ingenic_of_match);
+@@ -481,7 +512,8 @@ static struct platform_driver spi_ingeni
+ };
+ 
+ module_platform_driver(spi_ingenic_driver);
+-MODULE_DESCRIPTION("SPI bus driver for the Ingenic JZ47xx SoCs");
++MODULE_DESCRIPTION("SPI bus driver for the Ingenic SoCs");
+ MODULE_AUTHOR("Artur Rojek <contact@artur-rojek.eu>");
+ MODULE_AUTHOR("Paul Cercueil <paul@crapouillou.net>");
++MODULE_AUTHOR("周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>");
+ MODULE_LICENSE("GPL");

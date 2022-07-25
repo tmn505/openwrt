@@ -6,6 +6,9 @@ xburst_setup_interfaces()
 	local board="$1"
 
 	case "$board" in
+	yna,cu1000-neo)
+		ucidef_set_interface_lan "eth0"
+		;;
 	zoomgo,zx10)
 		ucidef_set_interface_lan "wlan0"
 		;;

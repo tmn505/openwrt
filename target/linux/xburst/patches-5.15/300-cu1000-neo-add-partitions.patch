@@ -1,0 +1,25 @@
+--- a/arch/mips/boot/dts/ingenic/cu1000-neo.dts
++++ b/arch/mips/boot/dts/ingenic/cu1000-neo.dts
+@@ -138,8 +138,20 @@
+ 			#size-cells = <1>;
+ 
+ 			partition@0 {
+-				label = "whole-flash";
+-				reg = <0x0 0x2000000>;
++				label = "u-boot";
++				reg = <0x0000000 0x003f000>;
++				read-only;
++			};
++
++			partition@3f000 {
++				label = "u-boot-env";
++				reg = <0x003f000 0x0001000>;
++			};
++
++			partition@40000 {
++				compatible = "denx,uimage";
++				label = "firmware";
++				reg = <0x0040000 0x1fc0000>;
+ 			};
+ 		};
+ 	};

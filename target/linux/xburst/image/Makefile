@@ -33,6 +33,11 @@ define Build/cloner
 	(cd $@.cloner; TZ=UTC $(STAGING_DIR_HOST)/bin/zip -u -9 -p -g -X -r $@ configs ddrs firmwares images;)
 endef
 
+define Build/lzo
+	$(STAGING_DIR_HOST)/bin/lzop -9 -f -o $@.new $@
+	@mv $@.new $@
+endef
+
 define Build/xburst-sdcard
 	rm -fR $@.boot
 	mkdir -p $@.boot
@@ -68,6 +73,20 @@ define Device/Default
   KERNEL := kernel-bin | append-dtb | lzma | uImage lzma
   SUPPORTED_DEVICES := $(subst _,$(comma),$(1))
 endef
+
+define Device/yna_cu1000-neo
+  DEVICE_VENDOR := YSH & ATIL
+  DEVICE_MODEL := CU1000-Neo
+  DEVICE_DTS := cu1000-neo
+  DEVICE_PACKAGES := cypress-firmware-43430-sdio kmod-brcmfmac kmod-hwmon-ads7828 \
+	kmod-i2c-ingenic kmod-phy-smsc kmod-serial-sc16is7xx-spi kmod-spi-ingenic \
+	kmod-stmmac-ingenic wpad-basic-wolfssl
+  IMAGE_SIZE := 32512k
+  KERNEL := kernel-bin | append-dtb | lzo | uImage lzo
+  KERNEL_INITRAMFS := kernel-bin | append-dtb | lzo | uImage lzo
+  KERNEL_SIZE := 3072k
+endef
+TARGET_DEVICES += yna_cu1000-neo
 
 define Device/zoomgo_zx10
   DEVICE_VENDOR := ZoomGo

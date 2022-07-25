@@ -37,10 +37,10 @@ Signed-off-by: 周琰杰 (Zhou Yanjie) <zhouyanjie@wanyeetech.com>
  	depends on OF && (SUPERH || COMPILE_TEST)
 --- a/drivers/spi/Makefile
 +++ b/drivers/spi/Makefile
-@@ -59,6 +59,7 @@ obj-$(CONFIG_SPI_HISI_KUNPENG)		+= spi-h
- obj-$(CONFIG_SPI_HISI_SFC_V3XX)		+= spi-hisi-sfc-v3xx.o
+@@ -60,6 +60,7 @@ obj-$(CONFIG_SPI_HISI_SFC_V3XX)		+= spi-
  obj-$(CONFIG_SPI_IMG_SPFI)		+= spi-img-spfi.o
  obj-$(CONFIG_SPI_IMX)			+= spi-imx.o
+ obj-$(CONFIG_SPI_INGENIC)		+= spi-ingenic.o
 +obj-$(CONFIG_SPI_INGENIC_SFC)	+= spi-ingenic-sfc.o
  obj-$(CONFIG_SPI_LANTIQ_SSC)		+= spi-lantiq-ssc.o
  obj-$(CONFIG_SPI_JCORE)			+= spi-jcore.o
