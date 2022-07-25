@@ -43,6 +43,21 @@ endef
 
 $(eval $(call KernelPackage,hwmon-ad7418))
 
+define KernelPackage/hwmon-ads7828
+  TITLE:=TI ADS7828 and ADS7830 8-channel A/D converters
+  KCONFIG:= CONFIG_SENSORS_ADS7828
+  FILES:= $(LINUX_DIR)/drivers/hwmon/ads7828.ko
+  AUTOLOAD:=$(call AutoLoad,60,ads7828,)
+  $(call AddDepends/hwmon,+kmod-i2c-core +kmod-regmap-i2c)
+endef
+
+define KernelPackage/hwmon-ads7828/description
+ ADS7828 resolution is 12-bit, while it is 8-bit on ADS7830
+endef
+
+$(eval $(call KernelPackage,hwmon-ads7828))
+
+
 define KernelPackage/hwmon-adt7410
   TITLE:=ADT7410 monitoring support
   KCONFIG:= \
