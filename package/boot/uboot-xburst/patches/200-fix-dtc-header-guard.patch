@@ -1,0 +1,19 @@
+--- a/u-boot/include/libfdt_env.h
++++ b/u-boot/include/libfdt_env.h
+@@ -20,6 +20,7 @@
+ 
+ #ifndef _LIBFDT_ENV_H
+ #define _LIBFDT_ENV_H
++#define LIBFDT_ENV_H
+ 
+ #include "compiler.h"
+ #include "linux/types.h"
+--- a/u-boot/include/libfdt.h
++++ b/u-boot/include/libfdt.h
+@@ -1,5 +1,6 @@
+ #ifndef _LIBFDT_H
+ #define _LIBFDT_H
++#define LIBFDT_H
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
