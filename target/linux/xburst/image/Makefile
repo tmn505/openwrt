@@ -33,6 +33,12 @@ define Build/cloner
 	(cd $@.cloner; TZ=UTC $(STAGING_DIR_HOST)/bin/zip -u -9 -p -g -X -r $@ configs ddrs firmwares images;)
 endef
 
+define Build/gpt
+	ptgen -g -G $(IMG_PART_DISKGUID) -l 2048 -o $@ \
+		-N kernel -p $(if $(KERNEL_SIZE),$$(( $(subst k,,$(KERNEL_SIZE) / 1024))),$(CONFIG_TARGET_KERNEL_PARTSIZE))M@3M \
+		-N rootfs -p $(CONFIG_TARGET_ROOTFS_PARTSIZE)M@$$(( 3 + $(if $(KERNEL_SIZE),$$(( $(subst k,,$(KERNEL_SIZE)) / 1024)),$(CONFIG_TARGET_KERNEL_PARTSIZE))))M
+endef
+
 define Build/lzo
 	$(STAGING_DIR_HOST)/bin/lzop -9 -f -o $@.new $@
 	@mv $@.new $@
@@ -81,10 +87,12 @@ define Device/yna_cu1000-neo
   DEVICE_PACKAGES := cypress-firmware-43430-sdio kmod-brcmfmac kmod-hwmon-ads7828 \
 	kmod-i2c-ingenic kmod-phy-smsc kmod-serial-sc16is7xx-spi kmod-spi-ingenic \
 	kmod-stmmac-ingenic wpad-basic-wolfssl
+  IMAGES += emmc.img.gz
+  IMAGE/emmc.img.gz := gpt | pad-to 17k | append-uboot | pad-to 3072k | append-kernel | pad-to $$$$(KERNEL_SIZE) | append-rootfs | pad-rootfs | gzip
   IMAGE_SIZE := 32512k
   KERNEL := kernel-bin | append-dtb | lzo | uImage lzo
   KERNEL_INITRAMFS := kernel-bin | append-dtb | lzo | uImage lzo
-  KERNEL_SIZE := 3072k
+  KERNEL_SIZE := 6144k
 endef
 TARGET_DEVICES += yna_cu1000-neo
 
