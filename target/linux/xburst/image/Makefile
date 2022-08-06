@@ -5,6 +5,34 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
+define Build/cloner
+	rm -R -f $@.cloner
+	mkdir -p \
+		$@.cloner/configs/$(call tolower,$(SOC)) \
+		$@.cloner/ddrs/$(shell awk -F',' '/^current_type/ {gsub(/"/,"",$$2); printf $$2}' $(DEVICE_NAME).cfg) \
+		$@.cloner/firmwares \
+		$@.cloner/images
+	$(CP) $(STAGING_DIR_HOST)/share/cloner/configs/*.cfg \
+		$@.cloner/configs
+	$(CP) $(DEVICE_NAME).cfg \
+		$@.cloner/configs/$(call tolower,$(SOC))
+	$(CP) $(STAGING_DIR_HOST)/share/cloner/ddrs/ddr.cfg \
+		$@.cloner/ddrs
+	$(CP) $(STAGING_DIR_HOST)/share/cloner/ddrs/$(shell awk -F',' '/^current_type/ {gsub(/"/,"",$$2); printf $$2}' $(DEVICE_NAME).cfg)/$(shell awk -F'=' '/^current_ddr/ {printf $$2}' $(DEVICE_NAME).cfg) \
+		$@.cloner/ddrs/$(shell awk -F',' '/^current_type/ {gsub(/"/,"",$$2); printf $$2}' $(DEVICE_NAME).cfg)
+	$(CP) $(STAGING_DIR_HOST)/share/cloner/firmwares/$(call tolower,$(SOC)) \
+		$@.cloner/firmwares
+	-$(CP) $(UBOOT_PATH) $@.cloner/images/bootloader.bin
+	mv -f $@ $@.cloner/images/firmware.bin
+	$(SED) \
+		'/\[language\]/,+3d; \
+		s/^board=.*/board=$(DEVICE_NAME).cfg/; \
+		s/^platform=.*/platform="$(PLATFORM_SERIES),$(call tolower,$(SOC))"/; \
+		s/^current=.*/current=$(shell printf $(SOC) | tr -d '0123456789')/' \
+		$@.cloner/configs/platforms.cfg
+	(cd $@.cloner; TZ=UTC $(STAGING_DIR_HOST)/bin/zip -u -9 -p -g -X -r $@ configs ddrs firmwares images;)
+endef
+
 define Build/xburst-sdcard
 	rm -fR $@.boot
 	mkdir -p $@.boot
@@ -29,6 +57,7 @@ endef
 
 DTS_DIR := $(DTS_DIR)/ingenic
 
+DEVICE_VARS += PLATFORM_SERIES
 define Device/Default
   PROFILES := Default
   BLOCKSIZE := 64k
@@ -47,11 +76,14 @@ define Device/zoomgo_zx10
   DEVICE_ALT0_MODEL := NW5030
   DEVICE_DTS_DIR := ../dts
   DEVICE_PACKAGES := cypress-firmware-43430-sdio kmod-brcmfmac wpad-basic-wolfssl
-  IMAGES += factory.bin sdcard.img.gz
+  IMAGES += cloner.ingenic factory.bin sdcard.img.gz
+  IMAGE/cloner.ingenic = append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | check-size 10240k | cloner
   IMAGE/factory.bin = append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | check-size 10240k
   IMAGE/sdcard.img.gz = append-rootfs | pad-extra 128k | xburst-sdcard | gzip | append-metadata
   IMAGE_SIZE := 16064k
   KERNEL_SIZE := 8192k
+  PLATFORM_SERIES := 0
+  SOC := X1000
   UIMAGE_NAME := NW5030
 endef
 TARGET_DEVICES += zoomgo_zx10
