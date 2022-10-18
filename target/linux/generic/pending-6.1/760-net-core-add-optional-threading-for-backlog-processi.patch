@@ -1,6 +1,50 @@
-From: Felix Fietkau <nbd@nbd.name>
-Date: Thu, 16 Feb 2023 18:39:04 +0100
-Subject: [PATCH] net/core: add optional threading for backlog processing
+From mboxrd@z Thu Jan  1 00:00:00 1970
+Return-Path: <netdev-owner@vger.kernel.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F23AC761A6
+	for <netdev@archiver.kernel.org>; Tue, 28 Mar 2023 20:22:52 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S229762AbjC1UWu (ORCPT <rfc822;netdev@archiver.kernel.org>);
+        Tue, 28 Mar 2023 16:22:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42632 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229603AbjC1UWt (ORCPT
+        <rfc822;netdev@vger.kernel.org>); Tue, 28 Mar 2023 16:22:49 -0400
+Received: from nbd.name (nbd.name [46.4.11.11])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4003426AA;
+        Tue, 28 Mar 2023 13:22:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=nbd.name;
+        s=20160729; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:
+        Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
+        Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+        In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+        List-Post:List-Owner:List-Archive;
+        bh=LLBRta2OzC7f8RVB2PBn4qY+X81QsKUf2QmIpMS7gjM=; b=Y+5CfyohfR8FAg4kAne/DEht1S
+        1+PTfX0qs+YOjosAFpGUXJdGxFOWeUAVzQar+Z8PRdl1vEh7E/uZUrOX7h+bnHHWmcvhvkaXydDHT
+        6vb2N+BYa3aTLxqwbEXm/I5Geo46OBxIrte3tEEYarqNKV9te4oZfh8RIrdB2QcD5AxY=;
+Received: from p54ae9730.dip0.t-ipconnect.de ([84.174.151.48] helo=Maecks.lan)
+        by ds12 with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        (Exim 4.94.2)
+        (envelope-from <nbd@nbd.name>)
+        id 1phFTb-007qcy-El; Tue, 28 Mar 2023 21:59:27 +0200
+From:   Felix Fietkau <nbd@nbd.name>
+To:     netdev@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>
+Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH net-next v2] net/core: add optional threading for backlog processing
+Date:   Tue, 28 Mar 2023 21:59:25 +0200
+Message-Id: <20230328195925.94495-1-nbd@nbd.name>
+X-Mailer: git-send-email 2.39.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Precedence: bulk
+List-ID: <netdev.vger.kernel.org>
+X-Mailing-List: netdev@vger.kernel.org
 
 When dealing with few flows or an imbalance on CPU utilization, static RPS
 CPU assignment can be too inflexible. Add support for enabling threaded NAPI
@@ -9,10 +53,75 @@ processing. This helps better spread the load across idle CPUs.
 
 Signed-off-by: Felix Fietkau <nbd@nbd.name>
 ---
+v2:
+ - initialize sd->backlog.poll_list in order fix switching backlogs to threaded
+   that have not been scheduled before
+PATCH:
+ - add missing process_queue_empty initialization
+ - fix kthread leak
+ - add documentation
+RFC v3:
+ - make patch more generic, applies to backlog processing in general
+ - fix process queue access on flush
+RFC v2:
+ - fix rebase error in rps locking
+ Documentation/admin-guide/sysctl/net.rst |  9 +++
+ Documentation/networking/scaling.rst     | 20 ++++++
+ include/linux/netdevice.h                |  2 +
+ net/core/dev.c                           | 83 ++++++++++++++++++++++--
+ net/core/sysctl_net_core.c               | 27 ++++++++
+ 5 files changed, 136 insertions(+), 5 deletions(-)
 
+--- a/Documentation/admin-guide/sysctl/net.rst
++++ b/Documentation/admin-guide/sysctl/net.rst
+@@ -47,6 +47,15 @@ Table : Subdirectories in /proc/sys/net
+ 1. /proc/sys/net/core - Network core options
+ ============================================
+ 
++backlog_threaded
++----------------
++
++This offloads processing of backlog (input packets steered by RPS, or
++queued because the kernel is receiving more than it can handle on the
++incoming CPU) to threads (one for each CPU) instead of processing them
++in softirq context. This can improve load balancing by allowing the
++scheduler to better spread the load across idle CPUs.
++
+ bpf_jit_enable
+ --------------
+ 
+--- a/Documentation/networking/scaling.rst
++++ b/Documentation/networking/scaling.rst
+@@ -244,6 +244,26 @@ Setting net.core.netdev_max_backlog to e
+ performed well in experiments.
+ 
+ 
++Threaded Backlog
++~~~~~~~~~~~~~~~~
++
++When dealing with few flows or an imbalance on CPU utilization, static
++RPS CPU assignment can be too inflexible. Making backlog processing
++threaded can improve load balancing by allowing the scheduler to spread
++the load across idle CPUs.
++
++
++Suggested Configuration
++~~~~~~~~~~~~~~~~~~~~~~~
++
++If you have CPUs fully utilized with network processing, you can enable
++threaded backlog processing by setting /proc/sys/net/core/backlog_threaded
++to 1. Afterwards, RPS CPU configuration bits no longer refer to CPU
++numbers, but to backlog threads named napi/backlog-<n>.
++If necessary, you can change the CPU affinity of these threads to limit
++them to specific CPU cores.
++
++
+ RFS: Receive Flow Steering
+ ==========================
+ 
 --- a/include/linux/netdevice.h
 +++ b/include/linux/netdevice.h
-@@ -502,6 +502,7 @@ static inline bool napi_complete(struct
+@@ -520,6 +520,7 @@ static inline bool napi_complete(struct
  }
  
  int dev_set_threaded(struct net_device *dev, bool threaded);
@@ -20,7 +129,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  
  /**
   *	napi_disable - prevent NAPI from scheduling
-@@ -3365,6 +3366,7 @@ struct softnet_data {
+@@ -3126,6 +3127,7 @@ struct softnet_data {
  	unsigned int		processed;
  	unsigned int		time_squeeze;
  	unsigned int		received_rps;
@@ -30,16 +139,16 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  #endif
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -4574,7 +4574,7 @@ static int rps_ipi_queued(struct softnet
- #ifdef CONFIG_RPS
+@@ -4604,7 +4604,7 @@ static int napi_schedule_rps(struct soft
  	struct softnet_data *mysd = this_cpu_ptr(&softnet_data);
  
+ #ifdef CONFIG_RPS
 -	if (sd != mysd) {
 +	if (sd != mysd && !test_bit(NAPI_STATE_THREADED, &sd->backlog.state)) {
  		sd->rps_ipi_next = mysd->rps_ipi_list;
  		mysd->rps_ipi_list = sd;
  
-@@ -5755,6 +5755,8 @@ static DEFINE_PER_CPU(struct work_struct
+@@ -5785,6 +5785,8 @@ static DEFINE_PER_CPU(struct work_struct
  /* Network device is going away, flush any packets still pending */
  static void flush_backlog(struct work_struct *work)
  {
@@ -48,7 +157,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  	struct sk_buff *skb, *tmp;
  	struct softnet_data *sd;
  
-@@ -5770,9 +5772,18 @@ static void flush_backlog(struct work_st
+@@ -5799,8 +5801,17 @@ static void flush_backlog(struct work_st
  			input_queue_head_incr(sd);
  		}
  	}
@@ -58,8 +167,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
 +			 !skb_queue_empty_lockless(&sd->process_queue);
 +	if (flush_processq)
 +		process_queue_empty = sd->process_queue_empty;
- 	rps_unlock(sd);
- 	local_irq_enable();
+ 	rps_unlock_irq_enable(sd);
  
 +	if (threaded)
 +		goto out;
@@ -67,7 +175,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  	skb_queue_walk_safe(&sd->process_queue, skb, tmp) {
  		if (skb->dev->reg_state == NETREG_UNREGISTERING) {
  			__skb_unlink(skb, &sd->process_queue);
-@@ -5780,7 +5791,18 @@ static void flush_backlog(struct work_st
+@@ -5808,7 +5819,16 @@ static void flush_backlog(struct work_st
  			input_queue_head_incr(sd);
  		}
  	}
@@ -77,24 +185,25 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
 +
 +	while (flush_processq) {
 +		msleep(1);
-+		local_irq_disable();
-+		rps_lock(sd);
++		rps_lock_irq_disable(sd);
 +		flush_processq = process_queue_empty == sd->process_queue_empty;
-+		rps_unlock(sd);
-+		local_irq_enable();
++		rps_unlock_irq_enable(sd);
 +	}
  }
  
  static bool flush_required(int cpu)
-@@ -6463,6 +6485,7 @@ static int process_backlog(struct napi_s
+@@ -5940,16 +5960,16 @@ static int process_backlog(struct napi_s
+ 		}
  
- 		local_irq_disable();
- 		rps_lock(sd);
+ 		rps_lock_irq_disable(sd);
 +		sd->process_queue_empty++;
  		if (skb_queue_empty(&sd->input_pkt_queue)) {
  			/*
  			 * Inline a custom version of __napi_complete().
-@@ -6472,7 +6495,8 @@ static int process_backlog(struct napi_s
+-			 * only current cpu owns and manipulates this napi,
+-			 * and NAPI_STATE_SCHED is the only possible flag set
+-			 * on backlog.
++			 * only current cpu owns and manipulates this napi.
  			 * We can use a plain write instead of clear_bit(),
  			 * and we dont need an smp_mb() memory barrier.
  			 */
@@ -104,7 +213,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  			again = false;
  		} else {
  			skb_queue_splice_tail_init(&sd->input_pkt_queue,
-@@ -6889,6 +6913,57 @@ int dev_set_threaded(struct net_device *
+@@ -6365,6 +6385,55 @@ int dev_set_threaded(struct net_device *
  }
  EXPORT_SYMBOL(dev_set_threaded);
  
@@ -146,23 +255,21 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
 +		struct napi_struct *n = &sd->backlog;
 +		unsigned long flags;
 +
-+		local_irq_save(flags);
-+		rps_lock(sd);
++		rps_lock_irqsave(sd, &flags);
 +		if (threaded)
 +			n->state |= NAPIF_STATE_THREADED;
 +		else
 +			n->state &= ~NAPIF_STATE_THREADED;
-+		rps_unlock(sd);
-+		local_irq_restore(flags);
++		rps_unlock_irq_restore(sd, &flags);
 +	}
 +
 +	return err;
 +}
 +
- void netif_napi_add(struct net_device *dev, struct napi_struct *napi,
- 		    int (*poll)(struct napi_struct *, int), int weight)
+ void netif_napi_add_weight(struct net_device *dev, struct napi_struct *napi,
+ 			   int (*poll)(struct napi_struct *, int), int weight)
  {
-@@ -11367,6 +11442,9 @@ static int dev_cpu_dead(unsigned int old
+@@ -11137,6 +11206,9 @@ static int dev_cpu_dead(unsigned int old
  	raise_softirq_irqoff(NET_TX_SOFTIRQ);
  	local_irq_enable();
  
@@ -172,9 +279,9 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  #ifdef CONFIG_RPS
  	remsd = oldsd->rps_ipi_list;
  	oldsd->rps_ipi_list = NULL;
-@@ -11706,6 +11784,7 @@ static int __init net_dev_init(void)
- 		sd->cpu = i;
- #endif
+@@ -11440,6 +11512,7 @@ static int __init net_dev_init(void)
+ 		INIT_CSD(&sd->defer_csd, trigger_rx_softirq, sd);
+ 		spin_lock_init(&sd->defer_lock);
  
 +		INIT_LIST_HEAD(&sd->backlog.poll_list);
  		init_gro_hash(&sd->backlog);
@@ -182,15 +289,15 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  		sd->backlog.weight = weight_p;
 --- a/net/core/sysctl_net_core.c
 +++ b/net/core/sysctl_net_core.c
-@@ -28,6 +28,7 @@ static int int_3600 = 3600;
+@@ -29,6 +29,7 @@ static int int_3600 = 3600;
  static int min_sndbuf = SOCK_MIN_SNDBUF;
  static int min_rcvbuf = SOCK_MIN_RCVBUF;
  static int max_skb_frags = MAX_SKB_FRAGS;
 +static int backlog_threaded;
- static long long_one __maybe_unused = 1;
- static long long_max __maybe_unused = LONG_MAX;
  
-@@ -114,6 +115,23 @@ static int rps_sock_flow_sysctl(struct c
+ static int net_msg_warn;	/* Unused, but still a sysctl */
+ 
+@@ -112,6 +113,23 @@ static int rps_sock_flow_sysctl(struct c
  }
  #endif /* CONFIG_RPS */
  
@@ -214,7 +321,7 @@ Signed-off-by: Felix Fietkau <nbd@nbd.name>
  #ifdef CONFIG_NET_FLOW_LIMIT
  static DEFINE_MUTEX(flow_limit_update_mutex);
  
-@@ -470,6 +488,15 @@ static struct ctl_table net_core_table[]
+@@ -473,6 +491,15 @@ static struct ctl_table net_core_table[]
  		.proc_handler	= rps_sock_flow_sysctl
  	},
  #endif
