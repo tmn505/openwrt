@@ -22,7 +22,7 @@ Link: https://lore.kernel.org/linux-mtd/20230308082021.870459-1-michael@walle.cc
 
 --- a/drivers/mtd/mtdcore.c
 +++ b/drivers/mtd/mtdcore.c
-@@ -895,8 +895,8 @@ static struct nvmem_device *mtd_otp_nvme
+@@ -888,8 +888,8 @@ static struct nvmem_device *mtd_otp_nvme
  
  	/* OTP nvmem will be registered on the physical device */
  	config.dev = mtd->dev.parent;
@@ -33,7 +33,7 @@ Link: https://lore.kernel.org/linux-mtd/20230308082021.870459-1-michael@walle.cc
  	config.owner = THIS_MODULE;
  	config.type = NVMEM_TYPE_OTP;
  	config.root_only = true;
-@@ -912,7 +912,6 @@ static struct nvmem_device *mtd_otp_nvme
+@@ -905,7 +905,6 @@ static struct nvmem_device *mtd_otp_nvme
  		nvmem = NULL;
  
  	of_node_put(np);

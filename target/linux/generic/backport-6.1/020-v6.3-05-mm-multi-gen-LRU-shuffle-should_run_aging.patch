@@ -1,7 +1,7 @@
-From 107d54931df3c28d81648122e219bf0034ef4e99 Mon Sep 17 00:00:00 2001
+From 77d4459a4a1a472b7309e475f962dda87d950abd Mon Sep 17 00:00:00 2001
 From: Yu Zhao <yuzhao@google.com>
 Date: Wed, 21 Dec 2022 21:19:03 -0700
-Subject: [PATCH 25/29] mm: multi-gen LRU: shuffle should_run_aging()
+Subject: [PATCH 5/8] mm: multi-gen LRU: shuffle should_run_aging()
 
 Move should_run_aging() next to its only caller left.
 
@@ -21,7 +21,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -4183,68 +4183,6 @@ done:
+@@ -4444,68 +4444,6 @@ done:
  	return true;
  }
  
@@ -32,11 +32,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -	unsigned long old = 0;
 -	unsigned long young = 0;
 -	unsigned long total = 0;
--	struct lru_gen_page *lrugen = &lruvec->lrugen;
+-	struct lru_gen_folio *lrugen = &lruvec->lrugen;
 -	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
 -	DEFINE_MIN_SEQ(lruvec);
 -
--	/* whether this lruvec is completely out of cold pages */
+-	/* whether this lruvec is completely out of cold folios */
 -	if (min_seq[!can_swap] + MIN_NR_GENS > max_seq) {
 -		*nr_to_scan = 0;
 -		return true;
@@ -90,7 +90,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static bool lruvec_is_sizable(struct lruvec *lruvec, struct scan_control *sc)
  {
  	int gen, type, zone;
-@@ -4828,6 +4766,68 @@ retry:
+@@ -5089,6 +5027,68 @@ retry:
  	return scanned;
  }
  
@@ -101,11 +101,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	unsigned long old = 0;
 +	unsigned long young = 0;
 +	unsigned long total = 0;
-+	struct lru_gen_page *lrugen = &lruvec->lrugen;
++	struct lru_gen_folio *lrugen = &lruvec->lrugen;
 +	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
 +	DEFINE_MIN_SEQ(lruvec);
 +
-+	/* whether this lruvec is completely out of cold pages */
++	/* whether this lruvec is completely out of cold folios */
 +	if (min_seq[!can_swap] + MIN_NR_GENS > max_seq) {
 +		*nr_to_scan = 0;
 +		return true;

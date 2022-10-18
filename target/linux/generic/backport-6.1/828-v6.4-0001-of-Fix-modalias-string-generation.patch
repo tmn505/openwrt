@@ -50,7 +50,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/drivers/of/device.c
 +++ b/drivers/of/device.c
-@@ -290,12 +290,15 @@ int of_device_request_module(struct devi
+@@ -297,12 +297,15 @@ int of_device_request_module(struct devi
  	if (size < 0)
  		return size;
  

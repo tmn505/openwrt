@@ -1,16 +1,16 @@
-From e20b7386fccc18c791796eb1dc1a91eee3ccf801 Mon Sep 17 00:00:00 2001
+From 7348cc91821b0cb24dfb00e578047f68299a50ab Mon Sep 17 00:00:00 2001
 From: Yu Zhao <yuzhao@google.com>
 Date: Wed, 21 Dec 2022 21:19:02 -0700
-Subject: [PATCH 24/29] mm: multi-gen LRU: remove aging fairness safeguard
+Subject: [PATCH 4/8] mm: multi-gen LRU: remove aging fairness safeguard
 
 Recall that the aging produces the youngest generation: first it scans
-for accessed pages and updates their gen counters; then it increments
+for accessed folios and updates their gen counters; then it increments
 lrugen->max_seq.
 
 The current aging fairness safeguard for kswapd uses two passes to
 ensure the fairness to multiple eligible memcgs. On the first pass,
 which is shared with the eviction, it checks whether all eligible
-memcgs are low on cold pages. If so, it requires a second pass, on
+memcgs are low on cold folios. If so, it requires a second pass, on
 which it ages all those memcgs at the same time.
 
 With memcg LRU, the aging, while ensuring eventual fairness, will run
@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -131,7 +131,6 @@ struct scan_control {
+@@ -136,7 +136,6 @@ struct scan_control {
  
  #ifdef CONFIG_LRU_GEN
  	/* help kswapd make better choices among multiple memcgs */
@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long last_reclaimed;
  #endif
  
-@@ -4184,7 +4183,7 @@ done:
+@@ -4445,7 +4444,7 @@ done:
  	return true;
  }
  
@@ -54,13 +54,13 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			     struct scan_control *sc, bool can_swap, unsigned long *nr_to_scan)
  {
  	int gen, type, zone;
-@@ -4193,6 +4192,13 @@ static bool should_run_aging(struct lruv
+@@ -4454,6 +4453,13 @@ static bool should_run_aging(struct lruv
  	unsigned long total = 0;
- 	struct lru_gen_page *lrugen = &lruvec->lrugen;
+ 	struct lru_gen_folio *lrugen = &lruvec->lrugen;
  	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
 +	DEFINE_MIN_SEQ(lruvec);
 +
-+	/* whether this lruvec is completely out of cold pages */
++	/* whether this lruvec is completely out of cold folios */
 +	if (min_seq[!can_swap] + MIN_NR_GENS > max_seq) {
 +		*nr_to_scan = 0;
 +		return true;
@@ -68,7 +68,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	for (type = !can_swap; type < ANON_AND_FILE; type++) {
  		unsigned long seq;
-@@ -4221,8 +4227,6 @@ static bool should_run_aging(struct lruv
+@@ -4482,8 +4488,6 @@ static bool should_run_aging(struct lruv
  	 * stalls when the number of generations reaches MIN_NR_GENS. Hence, the
  	 * ideal number of generations is MIN_NR_GENS+1.
  	 */
@@ -77,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (min_seq[!can_swap] + MIN_NR_GENS < max_seq)
  		return false;
  
-@@ -4241,40 +4245,54 @@ static bool should_run_aging(struct lruv
+@@ -4502,40 +4506,54 @@ static bool should_run_aging(struct lruv
  	return false;
  }
  
@@ -90,7 +90,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	int gen, type, zone;
 +	unsigned long total = 0;
 +	bool can_swap = get_swappiness(lruvec, sc);
-+	struct lru_gen_page *lrugen = &lruvec->lrugen;
++	struct lru_gen_folio *lrugen = &lruvec->lrugen;
  	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
  	DEFINE_MAX_SEQ(lruvec);
  	DEFINE_MIN_SEQ(lruvec);
@@ -134,7 +134,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -		if (!nr_to_scan && sc->priority != DEF_PRIORITY)
 -			return false;
 -	}
-+	/* see the comment on lru_gen_page */
++	/* see the comment on lru_gen_folio */
 +	gen = lru_gen_from_seq(min_seq[LRU_GEN_FILE]);
 +	birth = READ_ONCE(lruvec->lrugen.timestamps[gen]);
  
@@ -153,7 +153,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /* to protect the working set of the last N jiffies */
-@@ -4283,46 +4301,32 @@ static unsigned long lru_gen_min_ttl __r
+@@ -4544,46 +4562,32 @@ static unsigned long lru_gen_min_ttl __r
  static void lru_gen_age_node(struct pglist_data *pgdat, struct scan_control *sc)
  {
  	struct mem_cgroup *memcg;
@@ -207,7 +207,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 */
  	if (mutex_trylock(&oom_lock)) {
  		struct oom_control oc = {
-@@ -4830,33 +4834,27 @@ retry:
+@@ -5091,33 +5095,27 @@ retry:
   *    reclaim.
   */
  static unsigned long get_nr_to_scan(struct lruvec *lruvec, struct scan_control *sc,
@@ -242,12 +242,12 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -		return nr_to_scan;
 -done:
 -	return min_seq[!can_swap] + MIN_NR_GENS <= max_seq ? nr_to_scan : 0;
-+	/* skip this lruvec as it's low on cold pages */
++	/* skip this lruvec as it's low on cold folios */
 +	return 0;
  }
  
  static unsigned long get_nr_to_reclaim(struct scan_control *sc)
-@@ -4875,9 +4873,7 @@ static unsigned long get_nr_to_reclaim(s
+@@ -5136,9 +5134,7 @@ static unsigned long get_nr_to_reclaim(s
  static void lru_gen_shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
  {
  	struct blk_plug plug;
@@ -257,7 +257,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long nr_to_reclaim = get_nr_to_reclaim(sc);
  
  	lru_add_drain();
-@@ -4898,13 +4894,13 @@ static void lru_gen_shrink_lruvec(struct
+@@ -5159,13 +5155,13 @@ static void lru_gen_shrink_lruvec(struct
  		else
  			swappiness = 0;
  
@@ -267,14 +267,14 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -			goto done;
 +			break;
  
- 		delta = evict_pages(lruvec, sc, swappiness);
+ 		delta = evict_folios(lruvec, sc, swappiness);
  		if (!delta)
 -			goto done;
 +			break;
  
  		scanned += delta;
  		if (scanned >= nr_to_scan)
-@@ -4916,10 +4912,6 @@ static void lru_gen_shrink_lruvec(struct
+@@ -5177,10 +5173,6 @@ static void lru_gen_shrink_lruvec(struct
  		cond_resched();
  	}
  

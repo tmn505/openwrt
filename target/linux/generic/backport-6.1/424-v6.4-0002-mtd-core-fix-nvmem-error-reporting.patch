@@ -19,7 +19,7 @@ Link: https://lore.kernel.org/linux-mtd/20230308082021.870459-2-michael@walle.cc
 
 --- a/drivers/mtd/mtdcore.c
 +++ b/drivers/mtd/mtdcore.c
-@@ -946,6 +946,7 @@ static int mtd_nvmem_fact_otp_reg_read(v
+@@ -939,6 +939,7 @@ static int mtd_nvmem_fact_otp_reg_read(v
  
  static int mtd_otp_nvmem_add(struct mtd_info *mtd)
  {
@@ -27,7 +27,7 @@ Link: https://lore.kernel.org/linux-mtd/20230308082021.870459-2-michael@walle.cc
  	struct nvmem_device *nvmem;
  	ssize_t size;
  	int err;
-@@ -959,7 +960,7 @@ static int mtd_otp_nvmem_add(struct mtd_
+@@ -952,7 +953,7 @@ static int mtd_otp_nvmem_add(struct mtd_
  			nvmem = mtd_otp_nvmem_register(mtd, "user-otp", size,
  						       mtd_nvmem_user_otp_reg_read);
  			if (IS_ERR(nvmem)) {
@@ -36,7 +36,7 @@ Link: https://lore.kernel.org/linux-mtd/20230308082021.870459-2-michael@walle.cc
  				return PTR_ERR(nvmem);
  			}
  			mtd->otp_user_nvmem = nvmem;
-@@ -977,7 +978,7 @@ static int mtd_otp_nvmem_add(struct mtd_
+@@ -970,7 +971,7 @@ static int mtd_otp_nvmem_add(struct mtd_
  			nvmem = mtd_otp_nvmem_register(mtd, "factory-otp", size,
  						       mtd_nvmem_fact_otp_reg_read);
  			if (IS_ERR(nvmem)) {

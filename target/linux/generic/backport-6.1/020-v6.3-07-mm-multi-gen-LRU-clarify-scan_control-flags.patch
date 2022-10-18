@@ -1,7 +1,7 @@
-From 93147736b5b3a21bea24313bfc7a696829932009 Mon Sep 17 00:00:00 2001
+From e9d4e1ee788097484606c32122f146d802a9c5fb Mon Sep 17 00:00:00 2001
 From: Yu Zhao <yuzhao@google.com>
 Date: Wed, 21 Dec 2022 21:19:05 -0700
-Subject: [PATCH 27/29] mm: multi-gen LRU: clarify scan_control flags
+Subject: [PATCH 7/8] mm: multi-gen LRU: clarify scan_control flags
 
 Among the flags in scan_control:
 1. sc->may_swap, which indicates swap constraint due to memsw.max, is
@@ -10,10 +10,10 @@ Among the flags in scan_control:
    opportunistically skip the aging path, since it is considered less
    latency sensitive.
 3. !(sc->gfp_mask & __GFP_IO), which indicates IO constraint, lowers
-   swappiness to prioritize file LRU, since clean file pages are more
+   swappiness to prioritize file LRU, since clean file folios are more
    likely to exist.
 4. sc->may_writepage and sc->may_unmap, which indicates opportunistic
-   reclaim, are rejected, since unmapped clean pages are already
+   reclaim, are rejected, since unmapped clean folios are already
    prioritized. Scanning for more of them is likely futile and can
    cause high reclaim latency when there is a large number of memcgs.
 
@@ -30,12 +30,12 @@ Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Suren Baghdasaryan <surenb@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- mm/vmscan.c | 55 +++++++++++++++++++++++++++--------------------------
- 1 file changed, 28 insertions(+), 27 deletions(-)
+ mm/vmscan.c | 56 ++++++++++++++++++++++++++---------------------------
+ 1 file changed, 28 insertions(+), 28 deletions(-)
 
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -2905,6 +2905,9 @@ static int get_swappiness(struct lruvec
+@@ -3175,6 +3175,9 @@ static int get_swappiness(struct lruvec
  	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
  	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
  
@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (!can_demote(pgdat->node_id, sc) &&
  	    mem_cgroup_get_nr_swap_pages(memcg) < MIN_LRU_BATCH)
  		return 0;
-@@ -3952,7 +3955,7 @@ static void walk_mm(struct lruvec *lruve
+@@ -4213,7 +4216,7 @@ static void walk_mm(struct lruvec *lruve
  	} while (err == -EAGAIN);
  }
  
@@ -54,7 +54,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	struct lru_gen_mm_walk *walk = current->reclaim_state->mm_walk;
  
-@@ -3960,7 +3963,7 @@ static struct lru_gen_mm_walk *set_mm_wa
+@@ -4221,7 +4224,7 @@ static struct lru_gen_mm_walk *set_mm_wa
  		VM_WARN_ON_ONCE(walk);
  
  		walk = &pgdat->mm_walk;
@@ -63,7 +63,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		VM_WARN_ON_ONCE(current_is_kswapd());
  
  		walk = kzalloc(sizeof(*walk), __GFP_HIGH | __GFP_NOMEMALLOC | __GFP_NOWARN);
-@@ -4146,7 +4149,7 @@ static bool try_to_inc_max_seq(struct lr
+@@ -4407,7 +4410,7 @@ static bool try_to_inc_max_seq(struct lr
  		goto done;
  	}
  
@@ -72,42 +72,42 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (!walk) {
  		success = iterate_mm_list_nowalk(lruvec, max_seq);
  		goto done;
-@@ -4215,8 +4218,6 @@ static bool lruvec_is_reclaimable(struct
+@@ -4476,8 +4479,6 @@ static bool lruvec_is_reclaimable(struct
  	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
  	DEFINE_MIN_SEQ(lruvec);
  
 -	VM_WARN_ON_ONCE(sc->memcg_low_reclaim);
 -
- 	/* see the comment on lru_gen_page */
+ 	/* see the comment on lru_gen_folio */
  	gen = lru_gen_from_seq(min_seq[LRU_GEN_FILE]);
  	birth = READ_ONCE(lruvec->lrugen.timestamps[gen]);
-@@ -4472,12 +4473,8 @@ static bool isolate_page(struct lruvec *
+@@ -4733,12 +4734,8 @@ static bool isolate_folio(struct lruvec
  {
  	bool success;
  
 -	/* unmapping inhibited */
--	if (!sc->may_unmap && page_mapped(page))
+-	if (!sc->may_unmap && folio_mapped(folio))
 -		return false;
 -
  	/* swapping inhibited */
 -	if (!(sc->may_writepage && (sc->gfp_mask & __GFP_IO)) &&
 +	if (!(sc->gfp_mask & __GFP_IO) &&
- 	    (PageDirty(page) ||
- 	     (PageAnon(page) && !PageSwapCache(page))))
+ 	    (folio_test_dirty(folio) ||
+ 	     (folio_test_anon(folio) && !folio_test_swapcache(folio))))
  		return false;
-@@ -4574,9 +4571,8 @@ static int scan_pages(struct lruvec *lru
+@@ -4835,9 +4832,8 @@ static int scan_folios(struct lruvec *lr
  	__count_vm_events(PGSCAN_ANON + type, isolated);
  
  	/*
 -	 * There might not be eligible pages due to reclaim_idx, may_unmap and
 -	 * may_writepage. Check the remaining to prevent livelock if it's not
 -	 * making progress.
-+	 * There might not be eligible pages due to reclaim_idx. Check the
++	 * There might not be eligible folios due to reclaim_idx. Check the
 +	 * remaining to prevent livelock if it's not making progress.
  	 */
  	return isolated || !remaining ? scanned : 0;
  }
-@@ -4836,8 +4832,7 @@ static long get_nr_to_scan(struct lruvec
+@@ -5097,8 +5093,7 @@ static long get_nr_to_scan(struct lruvec
  	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
  	DEFINE_MAX_SEQ(lruvec);
  
@@ -117,13 +117,13 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return 0;
  
  	if (!should_run_aging(lruvec, max_seq, sc, can_swap, &nr_to_scan))
-@@ -4865,17 +4860,14 @@ static bool try_to_shrink_lruvec(struct
+@@ -5126,17 +5121,14 @@ static bool try_to_shrink_lruvec(struct
  	long nr_to_scan;
  	unsigned long scanned = 0;
  	unsigned long nr_to_reclaim = get_nr_to_reclaim(sc);
 +	int swappiness = get_swappiness(lruvec, sc);
 +
-+	/* clean file pages are more likely to exist */
++	/* clean file folios are more likely to exist */
 +	if (swappiness && !(sc->gfp_mask & __GFP_IO))
 +		swappiness = 1;
  
@@ -140,7 +140,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		nr_to_scan = get_nr_to_scan(lruvec, sc, swappiness);
  		if (nr_to_scan <= 0)
-@@ -5005,12 +4997,13 @@ static void lru_gen_shrink_lruvec(struct
+@@ -5267,12 +5259,13 @@ static void lru_gen_shrink_lruvec(struct
  	struct blk_plug plug;
  
  	VM_WARN_ON_ONCE(global_reclaim(sc));
@@ -151,16 +151,16 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	blk_start_plug(&plug);
  
 -	set_mm_walk(lruvec_pgdat(lruvec));
-+	set_mm_walk(NULL, false);
++	set_mm_walk(NULL, sc->proactive);
  
  	if (try_to_shrink_lruvec(lruvec, sc))
  		lru_gen_rotate_memcg(lruvec, MEMCG_LRU_YOUNG);
-@@ -5066,11 +5059,19 @@ static void lru_gen_shrink_node(struct p
+@@ -5328,11 +5321,19 @@ static void lru_gen_shrink_node(struct p
  
  	VM_WARN_ON_ONCE(!global_reclaim(sc));
  
 +	/*
-+	 * Unmapped clean pages are already prioritized. Scanning for more of
++	 * Unmapped clean folios are already prioritized. Scanning for more of
 +	 * them is likely futile and can cause high reclaim latency when there
 +	 * is a large number of memcgs.
 +	 */
@@ -172,11 +172,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	blk_start_plug(&plug);
  
 -	set_mm_walk(pgdat);
-+	set_mm_walk(pgdat, false);
++	set_mm_walk(pgdat, sc->proactive);
  
  	set_initial_priority(pgdat, sc);
  
-@@ -5088,7 +5089,7 @@ static void lru_gen_shrink_node(struct p
+@@ -5350,7 +5351,7 @@ static void lru_gen_shrink_node(struct p
  	clear_mm_walk();
  
  	blk_finish_plug(&plug);
@@ -185,7 +185,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* kswapd should never fail */
  	pgdat->kswapd_failures = 0;
  }
-@@ -5656,7 +5657,7 @@ static ssize_t lru_gen_seq_write(struct
+@@ -5922,7 +5923,7 @@ static ssize_t lru_gen_seq_write(struct
  	set_task_reclaim_state(current, &sc.reclaim_state);
  	flags = memalloc_noreclaim_save();
  	blk_start_plug(&plug);

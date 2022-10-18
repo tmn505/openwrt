@@ -25,7 +25,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -4934,18 +4934,20 @@ static int shrink_one(struct lruvec *lru
+@@ -5199,18 +5199,20 @@ static int shrink_one(struct lruvec *lru
  
  static void shrink_many(struct pglist_data *pgdat, struct scan_control *sc)
  {
@@ -34,21 +34,21 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int bin;
  	int first_bin;
  	struct lruvec *lruvec;
- 	struct lru_gen_page *lrugen;
+ 	struct lru_gen_folio *lrugen;
 +	struct mem_cgroup *memcg;
  	const struct hlist_nulls_node *pos;
 -	int op = 0;
 -	struct mem_cgroup *memcg = NULL;
  	unsigned long nr_to_reclaim = get_nr_to_reclaim(sc);
  
- 	bin = first_bin = prandom_u32_max(MEMCG_NR_BINS);
+ 	bin = first_bin = get_random_u32_below(MEMCG_NR_BINS);
  restart:
 +	op = 0;
 +	memcg = NULL;
  	gen = get_memcg_gen(READ_ONCE(pgdat->memcg_lru.seq));
  
  	rcu_read_lock();
-@@ -4969,14 +4971,22 @@ restart:
+@@ -5234,14 +5236,22 @@ restart:
  
  		op = shrink_one(lruvec, sc);
  
@@ -74,7 +74,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* restart if raced with lru_gen_rotate_memcg() */
  	if (gen != get_nulls_value(pos))
  		goto restart;
-@@ -4985,11 +4995,6 @@ restart:
+@@ -5250,11 +5260,6 @@ restart:
  	bin = get_memcg_bin(bin + 1);
  	if (bin != first_bin)
  		goto restart;

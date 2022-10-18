@@ -22,7 +22,7 @@ Link: https://lore.kernel.org/linux-mtd/20230308082021.870459-3-michael@walle.cc
 
 --- a/drivers/mtd/mtdcore.c
 +++ b/drivers/mtd/mtdcore.c
-@@ -1031,10 +1031,14 @@ int mtd_device_parse_register(struct mtd
+@@ -1023,10 +1023,14 @@ int mtd_device_parse_register(struct mtd
  
  	mtd_set_dev_defaults(mtd);
  
@@ -38,7 +38,7 @@ Link: https://lore.kernel.org/linux-mtd/20230308082021.870459-3-michael@walle.cc
  	}
  
  	/* Prefer parsed partitions over driver-provided fallback */
-@@ -1069,9 +1073,12 @@ int mtd_device_parse_register(struct mtd
+@@ -1061,9 +1065,12 @@ int mtd_device_parse_register(struct mtd
  		register_reboot_notifier(&mtd->reboot_notifier);
  	}
  

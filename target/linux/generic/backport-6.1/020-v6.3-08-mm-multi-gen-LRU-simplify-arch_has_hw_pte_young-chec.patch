@@ -1,8 +1,7 @@
-From cf3297e4c7a928da8b2b2f0baff2f9c69ea57952 Mon Sep 17 00:00:00 2001
+From f386e9314025ea99dae639ed2032560a92081430 Mon Sep 17 00:00:00 2001
 From: Yu Zhao <yuzhao@google.com>
 Date: Wed, 21 Dec 2022 21:19:06 -0700
-Subject: [PATCH 28/29] mm: multi-gen LRU: simplify arch_has_hw_pte_young()
- check
+Subject: [PATCH 8/8] mm: multi-gen LRU: simplify arch_has_hw_pte_young() check
 
 Scanning page tables when hardware does not set the accessed bit has
 no real use cases.
@@ -23,7 +22,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -4144,7 +4144,7 @@ static bool try_to_inc_max_seq(struct lr
+@@ -4405,7 +4405,7 @@ static bool try_to_inc_max_seq(struct lr
  	 * handful of PTEs. Spreading the work out over a period of time usually
  	 * is less efficient, but it avoids bursty page faults.
  	 */

@@ -1,7 +1,7 @@
-From fa6363828d314e837c5f79e97ea5e8c0d2f7f062 Mon Sep 17 00:00:00 2001
+From e4dde56cd208674ce899b47589f263499e5b8cdc Mon Sep 17 00:00:00 2001
 From: Yu Zhao <yuzhao@google.com>
 Date: Wed, 21 Dec 2022 21:19:04 -0700
-Subject: [PATCH 26/29] mm: multi-gen LRU: per-node lru_gen_page lists
+Subject: [PATCH 6/8] mm: multi-gen LRU: per-node lru_gen_folio lists
 
 For each node, memcgs are divided into two generations: the old and
 the young. For each generation, memcgs are randomly sharded into
@@ -64,12 +64,12 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  include/linux/mmzone.h     | 117 +++++++++++-
  mm/memcontrol.c            |  16 ++
  mm/page_alloc.c            |   1 +
- mm/vmscan.c                | 373 +++++++++++++++++++++++++++++++++----
- 6 files changed, 499 insertions(+), 35 deletions(-)
+ mm/vmscan.c                | 374 +++++++++++++++++++++++++++++++++----
+ 6 files changed, 500 insertions(+), 35 deletions(-)
 
 --- a/include/linux/memcontrol.h
 +++ b/include/linux/memcontrol.h
-@@ -818,6 +818,11 @@ static inline void obj_cgroup_put(struct
+@@ -790,6 +790,11 @@ static inline void obj_cgroup_put(struct
  	percpu_ref_put(&objcg->refcnt);
  }
  
@@ -81,8 +81,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline void mem_cgroup_put(struct mem_cgroup *memcg)
  {
  	if (memcg)
-@@ -1283,6 +1288,11 @@ struct mem_cgroup *mem_cgroup_from_css(s
- 	return NULL;
+@@ -1290,6 +1295,11 @@ static inline void obj_cgroup_put(struct
+ {
  }
  
 +static inline bool mem_cgroup_tryget(struct mem_cgroup *memcg)
@@ -95,7 +95,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
 --- a/include/linux/mm_inline.h
 +++ b/include/linux/mm_inline.h
-@@ -112,6 +112,18 @@ static inline bool lru_gen_in_fault(void
+@@ -122,6 +122,18 @@ static inline bool lru_gen_in_fault(void
  	return current->in_lru_fault;
  }
  
@@ -114,7 +114,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline int lru_gen_from_seq(unsigned long seq)
  {
  	return seq % MAX_NR_GENS;
-@@ -287,6 +299,11 @@ static inline bool lru_gen_in_fault(void
+@@ -297,6 +309,11 @@ static inline bool lru_gen_in_fault(void
  	return false;
  }
  
@@ -123,7 +123,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	return 0;
 +}
 +
- static inline bool lru_gen_add_page(struct lruvec *lruvec, struct page *page, bool reclaiming)
+ static inline bool lru_gen_add_folio(struct lruvec *lruvec, struct folio *folio, bool reclaiming)
  {
  	return false;
 --- a/include/linux/mmzone.h
@@ -136,7 +136,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #include <linux/wait.h>
  #include <linux/bitops.h>
  #include <linux/cache.h>
-@@ -357,6 +358,15 @@ struct page_vma_mapped_walk;
+@@ -367,6 +368,15 @@ struct page_vma_mapped_walk;
  #define LRU_GEN_MASK		((BIT(LRU_GEN_WIDTH) - 1) << LRU_GEN_PGOFF)
  #define LRU_REFS_MASK		((BIT(LRU_REFS_WIDTH) - 1) << LRU_REFS_PGOFF)
  
@@ -152,22 +152,22 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #ifdef CONFIG_LRU_GEN
  
  enum {
-@@ -416,6 +426,14 @@ struct lru_gen_page {
+@@ -426,6 +436,14 @@ struct lru_gen_folio {
  	atomic_long_t refaulted[NR_HIST_GENS][ANON_AND_FILE][MAX_NR_TIERS];
  	/* whether the multi-gen LRU is enabled */
  	bool enabled;
 +#ifdef CONFIG_MEMCG
-+	/* the memcg generation this lru_gen_page belongs to */
++	/* the memcg generation this lru_gen_folio belongs to */
 +	u8 gen;
-+	/* the list segment this lru_gen_page belongs to */
++	/* the list segment this lru_gen_folio belongs to */
 +	u8 seg;
-+	/* per-node lru_gen_page list for global reclaim */
++	/* per-node lru_gen_folio list for global reclaim */
 +	struct hlist_nulls_node list;
 +#endif
  };
  
  enum {
-@@ -469,12 +487,87 @@ void lru_gen_init_lruvec(struct lruvec *
+@@ -479,12 +497,87 @@ void lru_gen_init_lruvec(struct lruvec *
  void lru_gen_look_around(struct page_vma_mapped_walk *pvmw);
  
  #ifdef CONFIG_MEMCG
@@ -216,9 +216,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +struct lru_gen_memcg {
 +	/* the per-node memcg generation counter */
 +	unsigned long seq;
-+	/* each memcg has one lru_gen_page per node */
++	/* each memcg has one lru_gen_folio per node */
 +	unsigned long nr_memcgs[MEMCG_NR_GENS];
-+	/* per-node lru_gen_page list for global reclaim */
++	/* per-node lru_gen_folio list for global reclaim */
 +	struct hlist_nulls_head	fifo[MEMCG_NR_GENS][MEMCG_NR_BINS];
 +	/* protects the above */
 +	spinlock_t lock;
@@ -256,7 +256,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline void lru_gen_init_lruvec(struct lruvec *lruvec)
  {
  }
-@@ -484,6 +577,7 @@ static inline void lru_gen_look_around(s
+@@ -494,6 +587,7 @@ static inline void lru_gen_look_around(s
  }
  
  #ifdef CONFIG_MEMCG
@@ -264,7 +264,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline void lru_gen_init_memcg(struct mem_cgroup *memcg)
  {
  }
-@@ -491,7 +585,24 @@ static inline void lru_gen_init_memcg(st
+@@ -501,7 +595,24 @@ static inline void lru_gen_init_memcg(st
  static inline void lru_gen_exit_memcg(struct mem_cgroup *memcg)
  {
  }
@@ -290,23 +290,23 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #endif /* CONFIG_LRU_GEN */
  
-@@ -1105,6 +1216,8 @@ typedef struct pglist_data {
+@@ -1219,6 +1330,8 @@ typedef struct pglist_data {
  #ifdef CONFIG_LRU_GEN
  	/* kswap mm walk data */
  	struct lru_gen_mm_walk	mm_walk;
-+	/* lru_gen_page list */
++	/* lru_gen_folio list */
 +	struct lru_gen_memcg memcg_lru;
  #endif
  
- 	ZONE_PADDING(_pad2_)
+ 	CACHELINE_PADDING(_pad2_);
 --- a/mm/memcontrol.c
 +++ b/mm/memcontrol.c
-@@ -549,6 +549,16 @@ static void mem_cgroup_update_tree(struc
+@@ -477,6 +477,16 @@ static void mem_cgroup_update_tree(struc
  	struct mem_cgroup_per_node *mz;
  	struct mem_cgroup_tree_per_node *mctz;
  
 +	if (lru_gen_enabled()) {
-+		struct lruvec *lruvec = &mem_cgroup_page_nodeinfo(memcg, page)->lruvec;
++		struct lruvec *lruvec = &memcg->nodeinfo[nid]->lruvec;
 +
 +		/* see the comment on MEMCG_NR_GENS */
 +		if (soft_limit_excess(memcg) && lru_gen_memcg_seg(lruvec) != MEMCG_LRU_HEAD)
@@ -315,12 +315,12 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		return;
 +	}
 +
- 	mctz = soft_limit_tree_from_page(page);
+ 	mctz = soft_limit_tree.rb_tree_per_node[nid];
  	if (!mctz)
  		return;
-@@ -3433,6 +3443,9 @@ unsigned long mem_cgroup_soft_limit_recl
+@@ -3522,6 +3532,9 @@ unsigned long mem_cgroup_soft_limit_recl
+ 	struct mem_cgroup_tree_per_node *mctz;
  	unsigned long excess;
- 	unsigned long nr_scanned;
  
 +	if (lru_gen_enabled())
 +		return 0;
@@ -328,15 +328,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (order > 0)
  		return 0;
  
-@@ -5321,6 +5334,7 @@ static int mem_cgroup_css_online(struct
+@@ -5382,6 +5395,7 @@ static int mem_cgroup_css_online(struct
  	if (unlikely(mem_cgroup_is_root(memcg)))
  		queue_delayed_work(system_unbound_wq, &stats_flush_dwork,
  				   2UL*HZ);
 +	lru_gen_online_memcg(memcg);
  	return 0;
- }
- 
-@@ -5347,6 +5361,7 @@ static void mem_cgroup_css_offline(struc
+ offline_kmem:
+ 	memcg_offline_kmem(memcg);
+@@ -5413,6 +5427,7 @@ static void mem_cgroup_css_offline(struc
  	memcg_offline_kmem(memcg);
  	reparent_shrinker_deferred(memcg);
  	wb_memcg_offline(memcg);
@@ -344,7 +344,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	drain_all_stock(memcg);
  
-@@ -5358,6 +5373,7 @@ static void mem_cgroup_css_released(stru
+@@ -5424,6 +5439,7 @@ static void mem_cgroup_css_released(stru
  	struct mem_cgroup *memcg = mem_cgroup_from_css(css);
  
  	invalidate_reclaim_iterators(memcg);
@@ -354,14 +354,14 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void mem_cgroup_css_free(struct cgroup_subsys_state *css)
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -7645,6 +7645,7 @@ static void __init free_area_init_node(i
+@@ -7941,6 +7941,7 @@ static void __init free_area_init_node(i
  	pgdat_set_deferred_range(pgdat);
  
  	free_area_init_core(pgdat);
 +	lru_gen_init_pgdat(pgdat);
  }
  
- void __init free_area_init_memoryless_node(int nid)
+ static void __init free_area_init_memoryless_node(int nid)
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
 @@ -54,6 +54,8 @@
@@ -373,7 +373,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include <asm/tlbflush.h>
  #include <asm/div64.h>
-@@ -129,11 +131,6 @@ struct scan_control {
+@@ -134,11 +136,6 @@ struct scan_control {
  	/* Always discard instead of demoting to lower tier memory */
  	unsigned int no_demotion:1;
  
@@ -385,7 +385,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* Allocation order */
  	s8 order;
  
-@@ -2880,6 +2877,9 @@ DEFINE_STATIC_KEY_ARRAY_FALSE(lru_gen_ca
+@@ -3150,6 +3147,9 @@ DEFINE_STATIC_KEY_ARRAY_FALSE(lru_gen_ca
  		for ((type) = 0; (type) < ANON_AND_FILE; (type)++)	\
  			for ((zone) = 0; (zone) < MAX_NR_ZONES; (zone)++)
  
@@ -395,7 +395,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static struct lruvec *get_lruvec(struct mem_cgroup *memcg, int nid)
  {
  	struct pglist_data *pgdat = NODE_DATA(nid);
-@@ -4169,8 +4169,7 @@ done:
+@@ -4430,8 +4430,7 @@ done:
  		if (sc->priority <= DEF_PRIORITY - 2)
  			wait_event_killable(lruvec->mm_state.wait,
  					    max_seq < READ_ONCE(lrugen->max_seq));
@@ -405,7 +405,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	VM_WARN_ON_ONCE(max_seq != READ_ONCE(lrugen->max_seq));
-@@ -4243,8 +4242,6 @@ static void lru_gen_age_node(struct pgli
+@@ -4504,8 +4503,6 @@ static void lru_gen_age_node(struct pgli
  
  	VM_WARN_ON_ONCE(!current_is_kswapd());
  
@@ -414,7 +414,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* check the order to exclude compaction-induced reclaim */
  	if (!min_ttl || sc->order || sc->priority == DEF_PRIORITY)
  		return;
-@@ -4833,8 +4830,7 @@ static bool should_run_aging(struct lruv
+@@ -5094,8 +5091,7 @@ static bool should_run_aging(struct lruv
   * 1. Defer try_to_inc_max_seq() to workqueues to reduce latency for memcg
   *    reclaim.
   */
@@ -424,19 +424,19 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	unsigned long nr_to_scan;
  	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
-@@ -4851,10 +4847,8 @@ static unsigned long get_nr_to_scan(stru
+@@ -5112,10 +5108,8 @@ static unsigned long get_nr_to_scan(stru
  	if (sc->priority == DEF_PRIORITY)
  		return nr_to_scan;
  
 -	try_to_inc_max_seq(lruvec, max_seq, sc, can_swap, false);
 -
- 	/* skip this lruvec as it's low on cold pages */
+ 	/* skip this lruvec as it's low on cold folios */
 -	return 0;
 +	return try_to_inc_max_seq(lruvec, max_seq, sc, can_swap, false) ? -1 : 0;
  }
  
  static unsigned long get_nr_to_reclaim(struct scan_control *sc)
-@@ -4863,29 +4857,18 @@ static unsigned long get_nr_to_reclaim(s
+@@ -5124,29 +5118,18 @@ static unsigned long get_nr_to_reclaim(s
  	if (!global_reclaim(sc))
  		return -1;
  
@@ -468,7 +468,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		if (sc->may_swap)
  			swappiness = get_swappiness(lruvec, sc);
-@@ -4895,7 +4878,7 @@ static void lru_gen_shrink_lruvec(struct
+@@ -5156,7 +5139,7 @@ static void lru_gen_shrink_lruvec(struct
  			swappiness = 0;
  
  		nr_to_scan = get_nr_to_scan(lruvec, sc, swappiness);
@@ -476,8 +476,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		if (nr_to_scan <= 0)
  			break;
  
- 		delta = evict_pages(lruvec, sc, swappiness);
-@@ -4912,10 +4895,250 @@ static void lru_gen_shrink_lruvec(struct
+ 		delta = evict_folios(lruvec, sc, swappiness);
+@@ -5173,10 +5156,251 @@ static void lru_gen_shrink_lruvec(struct
  		cond_resched();
  	}
  
@@ -515,8 +515,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 +	shrink_slab(sc->gfp_mask, pgdat->node_id, memcg, sc->priority);
 +
-+	vmpressure(sc->gfp_mask, memcg, false, sc->nr_scanned - scanned,
-+		   sc->nr_reclaimed - reclaimed);
++	if (!sc->proactive)
++		vmpressure(sc->gfp_mask, memcg, false, sc->nr_scanned - scanned,
++			   sc->nr_reclaimed - reclaimed);
 +
 +	sc->nr_reclaimed += current->reclaim_state->reclaimed_slab;
 +	current->reclaim_state->reclaimed_slab = 0;
@@ -532,13 +533,13 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	int bin;
 +	int first_bin;
 +	struct lruvec *lruvec;
-+	struct lru_gen_page *lrugen;
++	struct lru_gen_folio *lrugen;
 +	const struct hlist_nulls_node *pos;
 +	int op = 0;
 +	struct mem_cgroup *memcg = NULL;
 +	unsigned long nr_to_reclaim = get_nr_to_reclaim(sc);
 +
-+	bin = first_bin = prandom_u32_max(MEMCG_NR_BINS);
++	bin = first_bin = get_random_u32_below(MEMCG_NR_BINS);
 +restart:
 +	gen = get_memcg_gen(READ_ONCE(pgdat->memcg_lru.seq));
 +
@@ -684,7 +685,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +{
 +	int seg;
 +	int old, new;
-+	int bin = prandom_u32_max(MEMCG_NR_BINS);
++	int bin = get_random_u32_below(MEMCG_NR_BINS);
 +	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
 +
 +	spin_lock(&pgdat->memcg_lru.lock);
@@ -728,7 +729,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  /******************************************************************************
   *                          state change
-@@ -5370,11 +5593,11 @@ static int run_cmd(char cmd, int memcg_i
+@@ -5634,11 +5858,11 @@ static int run_cmd(char cmd, int memcg_i
  
  	if (!mem_cgroup_disabled()) {
  		rcu_read_lock();
@@ -743,7 +744,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		rcu_read_unlock();
  
  		if (!memcg)
-@@ -5521,6 +5744,19 @@ void lru_gen_init_lruvec(struct lruvec *
+@@ -5786,6 +6010,19 @@ void lru_gen_init_lruvec(struct lruvec *
  }
  
  #ifdef CONFIG_MEMCG
@@ -763,7 +764,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  void lru_gen_init_memcg(struct mem_cgroup *memcg)
  {
  	INIT_LIST_HEAD(&memcg->mm_list.fifo);
-@@ -5544,7 +5780,69 @@ void lru_gen_exit_memcg(struct mem_cgrou
+@@ -5809,7 +6046,69 @@ void lru_gen_exit_memcg(struct mem_cgrou
  		}
  	}
  }
@@ -773,7 +774,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +{
 +	int gen;
 +	int nid;
-+	int bin = prandom_u32_max(MEMCG_NR_BINS);
++	int bin = get_random_u32_below(MEMCG_NR_BINS);
 +
 +	for_each_node(nid) {
 +		struct pglist_data *pgdat = NODE_DATA(nid);
@@ -834,7 +835,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static int __init init_lru_gen(void)
  {
-@@ -5571,6 +5869,10 @@ static void lru_gen_shrink_lruvec(struct
+@@ -5836,6 +6135,10 @@ static void lru_gen_shrink_lruvec(struct
  {
  }
  
@@ -845,7 +846,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* CONFIG_LRU_GEN */
  
  static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
-@@ -5584,7 +5886,7 @@ static void shrink_lruvec(struct lruvec
+@@ -5849,7 +6152,7 @@ static void shrink_lruvec(struct lruvec
  	bool proportional_reclaim;
  	struct blk_plug plug;
  
@@ -854,7 +855,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		lru_gen_shrink_lruvec(lruvec, sc);
  		return;
  	}
-@@ -5826,6 +6128,11 @@ static void shrink_node(pg_data_t *pgdat
+@@ -6092,6 +6395,11 @@ static void shrink_node(pg_data_t *pgdat
  	struct lruvec *target_lruvec;
  	bool reclaimable = false;
  

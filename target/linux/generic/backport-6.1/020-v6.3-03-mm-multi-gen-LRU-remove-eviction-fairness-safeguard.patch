@@ -1,10 +1,10 @@
-From ce45f1c4b32cf69b166f56ef5bc6c761e06ed4e5 Mon Sep 17 00:00:00 2001
+From a579086c99ed70cc4bfc104348dbe3dd8f2787e6 Mon Sep 17 00:00:00 2001
 From: Yu Zhao <yuzhao@google.com>
 Date: Wed, 21 Dec 2022 21:19:01 -0700
-Subject: [PATCH 23/29] mm: multi-gen LRU: remove eviction fairness safeguard
+Subject: [PATCH 3/8] mm: multi-gen LRU: remove eviction fairness safeguard
 
 Recall that the eviction consumes the oldest generation: first it
-bucket-sorts pages whose gen counters were updated by the aging and
+bucket-sorts folios whose gen counters were updated by the aging and
 reclaims the rest; then it increments lrugen->min_seq.
 
 The current eviction fairness safeguard for global reclaim has a
@@ -32,12 +32,12 @@ Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Suren Baghdasaryan <surenb@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- mm/vmscan.c | 82 +++++++++++++++--------------------------------------
- 1 file changed, 23 insertions(+), 59 deletions(-)
+ mm/vmscan.c | 81 +++++++++++++++--------------------------------------
+ 1 file changed, 23 insertions(+), 58 deletions(-)
 
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -443,6 +443,11 @@ static bool cgroup_reclaim(struct scan_c
+@@ -448,6 +448,11 @@ static bool cgroup_reclaim(struct scan_c
  	return sc->target_mem_cgroup;
  }
  
@@ -49,7 +49,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /**
   * writeback_throttling_sane - is the usual dirty throttling mechanism available?
   * @sc: scan_control in question
-@@ -493,6 +498,11 @@ static bool cgroup_reclaim(struct scan_c
+@@ -498,6 +503,11 @@ static bool cgroup_reclaim(struct scan_c
  	return false;
  }
  
@@ -61,17 +61,17 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static bool writeback_throttling_sane(struct scan_control *sc)
  {
  	return true;
-@@ -4722,8 +4732,7 @@ static int isolate_pages(struct lruvec *
+@@ -4983,8 +4993,7 @@ static int isolate_folios(struct lruvec
  	return scanned;
  }
  
--static int evict_pages(struct lruvec *lruvec, struct scan_control *sc, int swappiness,
--		       bool *need_swapping)
-+static int evict_pages(struct lruvec *lruvec, struct scan_control *sc, int swappiness)
+-static int evict_folios(struct lruvec *lruvec, struct scan_control *sc, int swappiness,
+-			bool *need_swapping)
++static int evict_folios(struct lruvec *lruvec, struct scan_control *sc, int swappiness)
  {
  	int type;
  	int scanned;
-@@ -4812,9 +4821,6 @@ retry:
+@@ -5073,9 +5082,6 @@ retry:
  		goto retry;
  	}
  
@@ -81,7 +81,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return scanned;
  }
  
-@@ -4853,68 +4859,26 @@ done:
+@@ -5114,67 +5120,26 @@ done:
  	return min_seq[!can_swap] + MIN_NR_GENS <= max_seq ? nr_to_scan : 0;
  }
  
@@ -93,7 +93,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -	DEFINE_MAX_SEQ(lruvec);
 -
 -	if (!current_is_kswapd()) {
--		/* age each memcg once to ensure fairness */
+-		/* age each memcg at most once to ensure fairness */
 -		if (max_seq - seq > 1)
 -			return true;
 -
@@ -118,10 +118,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -
 -	/*
 -	 * A minimum amount of work was done under global memory pressure. For
--	 * kswapd, it may be overshooting. For direct reclaim, the target isn't
--	 * met, and yet the allocation may still succeed, since kswapd may have
--	 * caught up. In either case, it's better to stop now, and restart if
--	 * necessary.
+-	 * kswapd, it may be overshooting. For direct reclaim, the allocation
+-	 * may succeed if all suitable zones are somewhat safe. In either case,
+-	 * it's better to stop now, and restart later if necessary.
 -	 */
 -	for (i = 0; i <= sc->reclaim_idx; i++) {
 -		unsigned long wmark;
@@ -159,16 +158,16 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	lru_add_drain();
  
-@@ -4938,7 +4902,7 @@ static void lru_gen_shrink_lruvec(struct
+@@ -5198,7 +5163,7 @@ static void lru_gen_shrink_lruvec(struct
  		if (!nr_to_scan)
  			goto done;
  
--		delta = evict_pages(lruvec, sc, swappiness, &need_swapping);
-+		delta = evict_pages(lruvec, sc, swappiness);
+-		delta = evict_folios(lruvec, sc, swappiness, &need_swapping);
++		delta = evict_folios(lruvec, sc, swappiness);
  		if (!delta)
  			goto done;
  
-@@ -4946,7 +4910,7 @@ static void lru_gen_shrink_lruvec(struct
+@@ -5206,7 +5171,7 @@ static void lru_gen_shrink_lruvec(struct
  		if (scanned >= nr_to_scan)
  			break;
  
@@ -177,12 +176,12 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			break;
  
  		cond_resched();
-@@ -5393,7 +5357,7 @@ static int run_eviction(struct lruvec *l
+@@ -5656,7 +5621,7 @@ static int run_eviction(struct lruvec *l
  		if (sc->nr_reclaimed >= nr_to_reclaim)
  			return 0;
  
--		if (!evict_pages(lruvec, sc, swappiness, NULL))
-+		if (!evict_pages(lruvec, sc, swappiness))
+-		if (!evict_folios(lruvec, sc, swappiness, NULL))
++		if (!evict_folios(lruvec, sc, swappiness))
  			return 0;
  
  		cond_resched();
