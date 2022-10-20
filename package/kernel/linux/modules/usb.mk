@@ -1155,7 +1155,10 @@ $(eval $(call KernelPackage,usb-net-aqc111))
 
 define KernelPackage/usb-net-asix
   TITLE:=Kernel module for USB-to-Ethernet Asix convertors
-  DEPENDS:=+kmod-libphy +LINUX_5_15:kmod-net-selftests +LINUX_5_15:kmod-mdio-devres +kmod-phy-ax88796b
+  DEPENDS:= \
+	+kmod-libphy +(LINUX_5_15||LINUX_6_1):kmod-net-selftests \
+	+LINUX_6_1:kmod-phylink +(LINUX_5_15||LINUX_6_1):kmod-mdio-devres \
+	+kmod-phy-ax88796b
   KCONFIG:=CONFIG_USB_NET_AX8817X
   FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/asix.ko
   AUTOLOAD:=$(call AutoProbe,asix)
@@ -1283,7 +1286,7 @@ $(eval $(call KernelPackage,usb-net-smsc75xx))
 
 define KernelPackage/usb-net-smsc95xx
   TITLE:=SMSC LAN95XX based USB 2.0 10/100 ethernet devices
-  DEPENDS:=+kmod-libphy +kmod-phy-smsc
+  DEPENDS:=+kmod-libphy +kmod-phy-smsc +!(LINUX_5_10||LINUX_5_15):kmod-net-selftests
   KCONFIG:=CONFIG_USB_NET_SMSC95XX
   FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/smsc95xx.ko
   AUTOLOAD:=$(call AutoProbe,smsc95xx)
