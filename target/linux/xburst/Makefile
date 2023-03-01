@@ -11,7 +11,7 @@ FEATURES := boot-part dt fpu gpio ramdisk rootfs-part rtc small_flash squashfs u
 CPU_TYPE := xburst
 
 KERNEL_PATCHVER := 5.15
-KERNEL_TESTING_PATCHVER := 5.15
+KERNEL_TESTING_PATCHVER := 6.1
 
 define Target/Description
 	Build firmware images for Ingenic XBurst X-series SoC based boards.
