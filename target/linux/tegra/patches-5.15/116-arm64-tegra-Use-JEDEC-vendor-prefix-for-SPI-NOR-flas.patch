@@ -1,0 +1,25 @@
+From 56797e625910497ef2a2dd40b76be2633a86f726 Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Tue, 7 Dec 2021 14:39:20 +0100
+Subject: [PATCH 6/9] arm64: tegra: Use JEDEC vendor prefix for SPI NOR flash
+ chips
+
+The standard "jedec," vendor prefix should be used for SPI NOR flash
+chips. This allows the right DT schema to be picked for validation.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
+@@ -1637,7 +1637,7 @@
+ 		status = "okay";
+ 
+ 		flash@0 {
+-			compatible = "spi-nor";
++			compatible = "jedec,spi-nor";
+ 			reg = <0>;
+ 			spi-max-frequency = <104000000>;
+ 			spi-tx-bus-width = <2>;

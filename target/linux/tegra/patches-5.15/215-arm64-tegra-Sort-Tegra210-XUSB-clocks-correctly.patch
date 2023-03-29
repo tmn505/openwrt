@@ -1,0 +1,37 @@
+From f2ef6a9180f38f7b6f633a90126d27e8a669a688 Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Tue, 7 Dec 2021 15:05:32 +0100
+Subject: [PATCH 5/7] arm64: tegra: Sort Tegra210 XUSB clocks correctly
+
+Make the order of the clocks and clock-names properties match the order
+in the device tree bindings. This isn't strictly necessary from a point
+of view of the operating system because matching will be done based on
+the clock-names, but it makes it easier to validate the device trees
+against the DT schema.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+@@ -1026,8 +1026,8 @@
+ 			 <&tegra_car TEGRA210_CLK_XUSB_HOST_SRC>,
+ 			 <&tegra_car TEGRA210_CLK_XUSB_FALCON_SRC>,
+ 			 <&tegra_car TEGRA210_CLK_XUSB_SS>,
+-			 <&tegra_car TEGRA210_CLK_XUSB_SS_SRC>,
+ 			 <&tegra_car TEGRA210_CLK_XUSB_SS_DIV2>,
++			 <&tegra_car TEGRA210_CLK_XUSB_SS_SRC>,
+ 			 <&tegra_car TEGRA210_CLK_XUSB_HS_SRC>,
+ 			 <&tegra_car TEGRA210_CLK_XUSB_FS_SRC>,
+ 			 <&tegra_car TEGRA210_CLK_PLL_U_480M>,
+@@ -1035,7 +1035,7 @@
+ 			 <&tegra_car TEGRA210_CLK_PLL_E>;
+ 		clock-names = "xusb_host", "xusb_host_src",
+ 			      "xusb_falcon_src", "xusb_ss",
+-			      "xusb_ss_src", "xusb_ss_div2",
++			      "xusb_ss_div2", "xusb_ss_src",
+ 			      "xusb_hs_src", "xusb_fs_src",
+ 			      "pll_u_480m", "clk_m", "pll_e";
+ 		resets = <&tegra_car 89>, <&tegra_car 156>,

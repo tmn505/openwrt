@@ -1,0 +1,35 @@
+From 056474013cb0754272773425cd1142778303c824 Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Mon, 21 Jun 2021 16:13:27 +0200
+Subject: [PATCH 2/7] arm64: tegra: Remove useless usb-ehci compatible string
+
+There's no such thing as a generic USB EHCI controller. The EHCI
+controllers found on Tegra SoCs are instantiations that need Tegra-
+specific glue to work properly, so drop the generic compatible string
+and keep only the Tegra-specific ones.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+@@ -1821,7 +1821,7 @@
+ 	};
+ 
+ 	usb@7d000000 {
+-		compatible = "nvidia,tegra210-ehci", "nvidia,tegra30-ehci", "usb-ehci";
++		compatible = "nvidia,tegra210-ehci", "nvidia,tegra30-ehci";
+ 		reg = <0x0 0x7d000000 0x0 0x4000>;
+ 		interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
+ 		phy_type = "utmi";
+@@ -1859,7 +1859,7 @@
+ 	};
+ 
+ 	usb@7d004000 {
+-		compatible = "nvidia,tegra210-ehci", "nvidia,tegra30-ehci", "usb-ehci";
++		compatible = "nvidia,tegra210-ehci", "nvidia,tegra30-ehci";
+ 		reg = <0x0 0x7d004000 0x0 0x4000>;
+ 		interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
+ 		phy_type = "utmi";

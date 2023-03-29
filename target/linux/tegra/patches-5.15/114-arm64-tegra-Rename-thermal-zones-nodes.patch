@@ -1,0 +1,24 @@
+From fe57ff5365c9aef12e80ee51e38d0ea6bb17b255 Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Tue, 7 Dec 2021 14:24:20 +0100
+Subject: [PATCH 4/9] arm64: tegra: Rename thermal zones nodes
+
+The DT schema requires that nodes representing thermal zones include a
+"-thermal" suffix in their name.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
+@@ -1684,7 +1684,7 @@
+ 	};
+ 
+ 	thermal-zones {
+-		cpu {
++		cpu-thermal {
+ 			trips {
+ 				cpu_trip_critical: critical {
+ 					temperature = <96500>;

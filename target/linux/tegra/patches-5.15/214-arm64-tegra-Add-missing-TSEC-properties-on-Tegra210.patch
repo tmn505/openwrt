@@ -1,0 +1,40 @@
+From 28a44b900e572ecb163cc4e042365b7df6e0fad3 Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Tue, 7 Dec 2021 15:01:37 +0100
+Subject: [PATCH 4/7] arm64: tegra: Add missing TSEC properties on Tegra210
+
+Add missing interrupts, clocks, clock-names, reset and reset-names
+properties for the TSEC blocks found on Tegra210.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+@@ -181,6 +181,12 @@
+ 		tsec@54100000 {
+ 			compatible = "nvidia,tegra210-tsec";
+ 			reg = <0x0 0x54100000 0x0 0x00040000>;
++			interrupts = <GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&tegra_car TEGRA210_CLK_TSEC>;
++			clock-names = "tsec";
++			resets = <&tegra_car 83>;
++			reset-names = "tsec";
++			status = "disabled";
+ 		};
+ 
+ 		dc@54200000 {
+@@ -283,6 +289,11 @@
+ 		tsec@54500000 {
+ 			compatible = "nvidia,tegra210-tsec";
+ 			reg = <0x0 0x54500000 0x0 0x00040000>;
++			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&tegra_car TEGRA210_CLK_TSECB>;
++			clock-names = "tsec";
++			resets = <&tegra_car 206>;
++			reset-names = "tsec";
+ 			status = "disabled";
+ 		};
+ 

@@ -1,0 +1,41 @@
+From 9c1b3ef8e204ca952d0304d4b92fa54de8b9815a Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Fri, 22 Mar 2019 14:56:11 +0100
+Subject: [PATCH 8/9] arm64: tegra: jetson-nano: Remove extra PLL power
+ supplies for PCIe and XUSB
+
+The XUSB pad controller handles the various PLL power supplies, so
+remove any references to them from the PCIe and XUSB controller device
+tree nodes.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts | 8 --------
+ 1 file changed, 8 deletions(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
+@@ -30,11 +30,8 @@
+ 	pcie@1003000 {
+ 		status = "okay";
+ 
+-		avdd-pll-uerefe-supply = <&vdd_pex_1v05>;
+ 		hvddio-pex-supply = <&vdd_1v8>;
+ 		dvddio-pex-supply = <&vdd_pex_1v05>;
+-		dvdd-pex-pll-supply = <&vdd_pex_1v05>;
+-		hvdd-pex-pll-e-supply = <&vdd_1v8>;
+ 		vddio-pex-ctl-supply = <&vdd_1v8>;
+ 
+ 		pci@1,0 {
+@@ -446,11 +443,6 @@
+ 		avdd-usb-supply = <&vdd_3v3_sys>;
+ 		dvddio-pex-supply = <&vdd_pex_1v05>;
+ 		hvddio-pex-supply = <&vdd_1v8>;
+-		/* these really belong to the XUSB pad controller */
+-		avdd-pll-utmip-supply = <&vdd_1v8>;
+-		avdd-pll-uerefe-supply = <&vdd_pex_1v05>;
+-		dvdd-usb-ss-pll-supply = <&vdd_pex_1v05>;
+-		hvdd-usb-ss-pll-e-supply = <&vdd_1v8>;
+ 
+ 		status = "okay";
+ 	};

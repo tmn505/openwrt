@@ -1,0 +1,28 @@
+From 6d9d19af3e34121a816757b4fae341a4d749e1a7 Mon Sep 17 00:00:00 2001
+From: Jon Hunter <jonathanh@nvidia.com>
+Date: Wed, 6 Apr 2022 16:26:55 +0100
+Subject: [PATCH 9/9] arm64: tegra: Update PWM fan node name
+
+According to the device-tree binding document for PWM fans [0], the
+PWM fan node name should be 'pwm-fan'. Update the PWM fan node name to
+align with this.
+
+[0] Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
+@@ -1657,7 +1657,7 @@
+ 		};
+ 	};
+ 
+-	fan: fan {
++	fan: pwm-fan {
+ 		compatible = "pwm-fan";
+ 		pwms = <&pwm 3 45334>;
+ 

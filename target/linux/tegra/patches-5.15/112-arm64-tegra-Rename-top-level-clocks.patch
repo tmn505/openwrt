@@ -1,0 +1,28 @@
+From 4cc3e3e164c02c6f2fce38f2098a1fe1256ea58d Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Mon, 6 Dec 2021 17:58:55 +0100
+Subject: [PATCH 2/9] arm64: tegra: Rename top-level clocks
+
+Clocks defined at the top level in device tree are no longer part of a
+simple bus and therefore don't have a reg property. Nodes without a reg
+property shouldn't have a unit-address either, so drop the unit address
+from the node names. To ensure nodes aren't duplicated (in which case
+they would end up merged in the final DTB), append the name of the clock
+to the node name.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
+@@ -1645,7 +1645,7 @@
+ 		};
+ 	};
+ 
+-	clk32k_in: clock@0 {
++	clk32k_in: clock-32k {
+ 		compatible = "fixed-clock";
+ 		clock-frequency = <32768>;
+ 		#clock-cells = <0>;

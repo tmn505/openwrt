@@ -1,0 +1,25 @@
+From 914ed1f56581f99094035f1cc989ab4498104e94 Mon Sep 17 00:00:00 2001
+From: Thierry Reding <treding@nvidia.com>
+Date: Fri, 17 Dec 2021 14:53:08 +0100
+Subject: [PATCH 6/7] arm64: tegra: Add host1x hotflush reset on Tegra210
+
+Add the host1x memory client hotflush reset on Tegra210.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+@@ -93,8 +93,8 @@
+ 		interrupt-names = "syncpt", "host1x";
+ 		clocks = <&tegra_car TEGRA210_CLK_HOST1X>;
+ 		clock-names = "host1x";
+-		resets = <&tegra_car 28>;
+-		reset-names = "host1x";
++		resets = <&tegra_car 28>, <&mc TEGRA210_MC_RESET_HC>;
++		reset-names = "host1x", "mc";
+ 
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
