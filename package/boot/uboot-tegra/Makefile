@@ -18,7 +18,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define U-Boot/Default
   BUILD_TARGET := tegra
-  BUILD_SUBTARGET := generic
+  BUILD_SUBTARGET := cortexa9
   HIDDEN := y
 endef
 
