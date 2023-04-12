@@ -1859,3 +1859,23 @@ endef
 
 $(eval $(call KernelPackage,chaoskey))
 
+define KernelPackage/usb-xhci-tegra
+  TITLE:=xHCI support for Tegra SoCs
+  DEPENDS:=+kmod-usb-xhci-hcd +kmod-usb-roles +t210-usb-firmware
+  KCONFIG:= \
+	  CONFIG_USB_XHCI_TEGRA \
+	  CONFIG_PHY_TEGRA_XUSB=m \
+	  CONFIG_USB_CHIPIDEA_TEGRA=y
+  HIDDEN:=1
+  FILES:= \
+	  $(LINUX_DIR)/drivers/usb/host/xhci-tegra.ko \
+	  $(LINUX_DIR)/drivers/phy/tegra/phy-tegra-xusb.ko
+  AUTOLOAD:=$(call AutoLoad,54,phy-tegra-xusb xhci-tegra,1)
+  $(call AddDepends/usb)
+endef
+
+define KernelPackage/usb-xhci-tegra/description
+  Kernel support for the xHCI host controller found in Tegra SoCs.
+endef
+
+$(eval $(call KernelPackage,usb-xhci-tegra))
