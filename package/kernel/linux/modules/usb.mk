@@ -1912,3 +1912,40 @@ endef
 
 $(eval $(call KernelPackage,chaoskey))
 
+
+define KernelPackage/usb-xhci-tegra
+  TITLE:=xHCI support for Tegra SoCs
+  DEPENDS:=+kmod-usb-xhci-hcd +kmod-usb-roles
+  KCONFIG:= \
+	  CONFIG_USB_XHCI_TEGRA \
+	  CONFIG_PHY_TEGRA_XUSB=m
+  HIDDEN:=1
+  FILES:= \
+	  $(LINUX_DIR)/drivers/usb/host/xhci-tegra.ko \
+	  $(LINUX_DIR)/drivers/phy/tegra/phy-tegra-xusb.ko
+  AUTOLOAD:=$(call AutoLoad,54,phy-tegra-xusb xhci-tegra,1)
+  $(call AddDepends/usb)
+endef
+
+define KernelPackage/usb-xhci-tegra/description
+  Kernel support for the xHCI host controller found in Tegra SoCs.
+  For each SoC generation different firmware is needed.
+endef
+
+$(eval $(call KernelPackage,usb-xhci-tegra))
+
+
+define KernelPackage/usb-udc-tegra
+  SUBMENU:=$(USB_MENU)
+  TITLE:=NVIDIA Tegra Superspeed USB 3.0 Device Controller
+  DEPENDS:=+kmod-usb-xhci-tegra
+  KCONFIG:=CONFIG_USB_TEGRA_XUDC
+  FILES:=$(LINUX_DIR)/drivers/usb/gadget/udc/tegra-xudc.ko
+  AUTOLOAD:=$(call AutoProbe,tegra-xudc)
+endef
+
+define KernelPackage/usb-udc-tegra/description
+  Enables NVIDIA Tegra USB 3.0 device mode controller driver.
+endef
+
+$(eval $(call KernelPackage,usb-udc-tegra))
