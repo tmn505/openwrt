@@ -954,8 +954,14 @@ define Device/pakedge_wr-1
 	SOC := qcom-ipq4018
 	BLOCKSIZE := 64k
 	IMAGE_SIZE := 31232k
-	KERNEL_SIZE := 4096k
+	KERNEL_SIZE := 8192k
 	IMAGE/sysupgrade.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | append-metadata
+	DEVICE_COMPAT_VERSION := 2.0
+	DEVICE_COMPAT_MESSAGE := \n$\
+		Booting command in U-Boot needs to be changed because of kernel \n$\
+		growing beyond 4MiB. Force upgrade to 23.05.0 first and it will \n$\
+		automatically amend booting command in U-Boot on first boot. \n$\
+		Then proceed with the upgrade to desired version.
 endef
 TARGET_DEVICES += pakedge_wr-1
 
