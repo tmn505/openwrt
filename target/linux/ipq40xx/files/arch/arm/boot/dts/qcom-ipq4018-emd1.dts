@@ -163,7 +163,6 @@
 			partition5@e0000 {
 				label = "0:APPSBLENV";
 				reg = <0x000e0000 0x00010000>;
-				read-only;
 			};
 			partition6@f0000 {
 				label = "0:APPSBL";

@@ -140,7 +140,6 @@
 			partition@e0000 {
 				label = "0:APPSBLENV";
 				reg = <0x00e0000 0x0010000>;
-				read-only;
 			};
 
 			partition@f0000 {
