@@ -399,6 +399,7 @@ define Device/dlink_dap-2610
 	WRGG_DEVNAME := /dev/mtdblock/8
 	WRGG_SIGNATURE := wapac30_dkbs_dap2610
 	IMAGE_SIZE := 14080k
+	KERNEL_SIZE := 4096k
 	IMAGES += factory.bin
 	# Bootloader expects a special 160 byte header which is added by
 	# wrgg-image.
@@ -477,6 +478,7 @@ define Device/engenius_emd1
 	DEVICE_DTS_CONFIG := config@4
 	SOC := qcom-ipq4018
 	IMAGE_SIZE := 30720k
+	KERNEL_SIZE := 4096k
 	IMAGES += factory.bin
 	IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | append-metadata
 	IMAGE/factory.bin := qsdk-ipq-factory-nor | check-size
@@ -797,6 +799,7 @@ define Device/netgear_ex61x0v2
 	NETGEAR_BOARD_ID := EX6150v2series
 	NETGEAR_HW_ID := 29765285+16+0+128+2x2
 	IMAGE_SIZE := 14400k
+	KERNEL_SIZE := 4096k
 	SOC := qcom-ipq4018
 endef
 
@@ -951,6 +954,7 @@ define Device/pakedge_wr-1
 	SOC := qcom-ipq4018
 	BLOCKSIZE := 64k
 	IMAGE_SIZE := 31232k
+	KERNEL_SIZE := 4096k
 	IMAGE/sysupgrade.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | append-metadata
 endef
 TARGET_DEVICES += pakedge_wr-1
@@ -994,6 +998,7 @@ define Device/qxwlan_e2600ac-c1
 	BOARD_NAME := e2600ac-c1
 	SOC := qcom-ipq4019
 	IMAGE_SIZE := 31232k
+	KERNEL_SIZE := 4096k
 	IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | append-metadata
 endef
 TARGET_DEVICES += qxwlan_e2600ac-c1
@@ -1193,6 +1198,7 @@ define Device/zyxel_wre6606
 	DEVICE_DTS_CONFIG := config@4
 	SOC := qcom-ipq4018
 	IMAGE_SIZE := 13184k
+	KERNEL_SIZE := 4096k
 	IMAGE/sysupgrade.bin := append-kernel | append-rootfs | pad-rootfs | check-size | append-metadata
 	DEVICE_PACKAGES := -kmod-ath10k-ct kmod-ath10k-ct-smallbuffers
 endef
