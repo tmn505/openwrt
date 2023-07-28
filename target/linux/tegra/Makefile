@@ -9,7 +9,8 @@ BOARDNAME:=NVIDIA Tegra
 FEATURES:=audio boot-part display ext4 fpu gpio pci pcie rootfs-part rtc squashfs usb targz
 SUBTARGETS:=cortexa9 cortexa57
 
-KERNEL_PATCHVER := 5.15
+KERNEL_PATCHVER:=5.15
+KERNEL_TESTING_PATCHVER:=6.1
 
 include $(INCLUDE_DIR)/target.mk
 
