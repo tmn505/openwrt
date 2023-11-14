@@ -1,0 +1,19 @@
+#!/bin/sh /etc/rc.common
+
+STOP=89
+
+restart() {
+	:
+}
+
+stop() {
+	. /lib/functions/leds.sh
+
+	case "$(board_name)" in
+	wyse,tx0)
+		status_led="green:status"
+		status_led_off
+		status_led="amber:status"
+		status_led_on
+	esac
+}

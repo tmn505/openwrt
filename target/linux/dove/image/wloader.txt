@@ -1,0 +1,4 @@
+<TX0_START>
+kernel=uImage
+param="root=PARTUUID=@PTUUID@-02 rootwait"
+<TX0_END>

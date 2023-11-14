@@ -1,0 +1,36 @@
+From: Tomasz Maciej Nowak <tmn505@gmail.com>
+Subject: Allow kb3930 and related for dove
+
+--- a/drivers/input/misc/Kconfig
++++ b/drivers/input/misc/Kconfig
+@@ -76,7 +76,7 @@ config INPUT_AD714X_SPI
+ config INPUT_ARIEL_PWRBUTTON
+ 	tristate "Dell Wyse 3020 Power Button Driver"
+ 	depends on SPI
+-	depends on MACH_MMP3_DT || COMPILE_TEST
++	depends on MACH_DOVE || MACH_MMP3_DT || COMPILE_TEST
+ 	help
+ 	  Say Y to enable support for reporting power button status on
+ 	  on Dell Wyse 3020 ("Ariel") thin client.
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -86,7 +86,7 @@ config LEDS_APU
+ config LEDS_ARIEL
+ 	tristate "Dell Wyse 3020 status LED support"
+ 	depends on LEDS_CLASS
+-	depends on (MACH_MMP3_DT && MFD_ENE_KB3930) || COMPILE_TEST
++	depends on ((MACH_DOVE || MACH_MMP3_DT) && MFD_ENE_KB3930) || COMPILE_TEST
+ 	help
+ 	  This driver adds support for controlling the front panel status
+ 	  LEDs on Dell Wyse 3020 (Ariel) board via the KB3930 Embedded
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -403,7 +403,7 @@ config MFD_DLN2
+ config MFD_ENE_KB3930
+ 	tristate "ENE KB3930 Embedded Controller support"
+ 	depends on I2C
+-	depends on MACH_MMP3_DT || COMPILE_TEST
++	depends on MACH_DOVE || MACH_MMP3_DT || COMPILE_TEST
+ 	select MFD_CORE
+ 	help
+ 	  This adds support for the power-off functionality and access to

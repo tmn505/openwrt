@@ -1,0 +1,94 @@
+From: Tomasz Maciej Nowak <tmn505@gmail.com>
+Subject: mfd: ene-kb3930: register driver for Mimas
+
+Wyse reused the same controller and similar firmware in another family
+of Tx0 (Mimas) thin clients. The vendor driver code[1] appears to be same
+as the one for Ariel board[2] except board suspend/resume. As we
+target LEDs control, there's no need to add anything else than board id.
+
+Registers readout:
+00: ff
+01: 01
+02: 00
+03: 01
+04: ff
+05: ff
+06: ff
+07: ff
+08: ff
+09: ff
+0a: 00
+0b: ff
+0c: ff
+0d: ff
+0e: ff
+0f: ff
+10: 01
+11: 01
+12: 01
+13: 01
+14: 01
+15: 01
+16: 00
+17: ff
+18: ff
+19: ff
+1a: ff
+1b: ff
+1c: ff
+1d: ff
+1e: ff
+1f: ff
+20: 01
+21: 01
+22: 02
+23: ff
+24: ff
+25: ff
+26: ff
+27: ff
+28: ff
+29: ff
+2a: ff
+2b: ff
+2c: ff
+2d: ff
+2e: ff
+2f: ff
+30: 4d
+31: 03
+32: 02
+33: ff
+34: ff
+35: ff
+36: ff
+37: ff
+38: ff
+39: ff
+3a: ff
+3b: ff
+3c: ff
+3d: ff
+3e: ff
+3f: ff
+40: ff
+41: ff
+42: ff
+43: ff
+44: 99
+45-ff: ff
+
+1. http://oem.archive.canonical.com/updates/pool/public/l/linux-mvl-dove/linux-mvl-dove_2.6.32-212.28hedley14.tar.gz
+2. https://git.kernel.org/pub/scm/linux/kernel/git/lkundrak/linux-mmp3-dell-ariel.git
+
+--- a/drivers/mfd/ene-kb3930.c
++++ b/drivers/mfd/ene-kb3930.c
+@@ -145,7 +145,7 @@ static int kb3930_probe(struct i2c_clien
+ 		return ret;
+ 
+ 	/* Currently we only support the cells present on Dell Ariel model. */
+-	if (model != 'J') {
++	if (!(model == 'J' || model == 'M')) {
+ 		dev_err(dev, "unknown board model: %02x\n", model);
+ 		return -ENODEV;
+ 	}

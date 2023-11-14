@@ -1,0 +1,31 @@
+. /lib/functions/system.sh
+. /lib/functions/uci-defaults.sh
+
+dove_setup_interfaces()
+{
+	local board="$1"
+
+	case "$board" in
+	wyse,tx0)
+		ucidef_set_interface_lan "eth0"
+		;;
+	*)
+		ucidef_set_interfaces_lan_wan "eth0" "eth1"
+		;;
+	esac
+}
+
+dove_setup_macs()
+{
+	[ -n "$lan_mac" ] && ucidef_set_interface_macaddr "lan" $lan_mac
+	[ -n "$wan_mac" ] && ucidef_set_interface_macaddr "wan" $wan_mac
+	[ -n "$label_mac" ] && ucidef_set_label_macaddr $label_mac
+}
+
+board_config_update
+board=$(board_name)
+dove_setup_interfaces $board
+dove_setup_macs $board
+board_config_flush
+
+exit 0

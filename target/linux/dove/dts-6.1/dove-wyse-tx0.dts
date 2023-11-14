@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018-2023
+ * bodhi <mibodhi@gmail.com>
+ * Koen
+ */
+
+/dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include "dove.dtsi"
+
+/ {
+	model = "Dell Wyse Tx0 (T10/T50)";
+	compatible = "wyse,tx0", "marvell,dove";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x40000000>;
+	};
+
+	poweroff {
+		compatible = "gpio-poweroff";
+		gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+		pinctrl-0 = <&pmx_gpio_8>;
+		pinctrl-names = "default";
+	};
+};
+
+&eth { status = "okay"; };
+
+&ethphy {
+	reg = <1>;
+};
+
+&i2c {
+	pinctrl-0 = <&pmx_i2c1>;
+	pinctrl-names = "default";
+};
+
+&i2c1 {
+	status = "okay";
+
+	ec@58 {
+		compatible = "dell,wyse-ariel-ec", "ene,kb3930";
+		reg = <0x58>;
+	};
+};
+
+&mdio { status = "okay"; };
+
+&pcie { status = "okay"; };
+
+&pcie0 { status = "okay"; };
+
+&sata0 { status = "okay"; };
+
+&sdio1 {
+	status = "okay";
+
+	bus-width = <4>;
+	cd-gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+	wp-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
+};
+
+&spi0 {
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <25000000>;
+	};
+};
+
+&uart0 { status = "okay"; };

@@ -1,0 +1,6 @@
+${devtype} read ${loadaddr} 0 1
+ptuuid ${loadaddr} ptuuid
+setenv bootargs "${console} ${mtdparts} root=PARTUUID=${ptuuid}-02 rw rootwait"
+
+${fs}load ${devtype} ${devnum}:${distro_bootpart} ${kernel_addr_r} uImage
+bootm ${kernel_addr_r}
