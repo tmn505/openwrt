@@ -616,15 +616,10 @@ define Device/Build/kernel
   $(call Device/Export,$$(KDIR_KERNEL_IMAGE),$(1))
   $(BIN_DIR)/$$(KERNEL_IMAGE): $$(KDIR_KERNEL_IMAGE)
 	cp $$^ $$@
-  ifndef IB
-    ifdef CONFIG_IB
-      install: $$(KDIR_KERNEL_IMAGE)
-    endif
-    $$(KDIR_KERNEL_IMAGE): $(KDIR)/$$(KERNEL_NAME) $(CURDIR)/Makefile $$(KERNEL_DEPENDS) image_prepare
+  $$(KDIR_KERNEL_IMAGE): $(KDIR)/$$(KERNEL_NAME) $(CURDIR)/Makefile $$(KERNEL_DEPENDS) image_prepare
 	@rm -f $$@
 	$$(call concat_cmd,$$(KERNEL))
 	$$(if $$(KERNEL_SIZE),$$(call Build/check-size,$$(KERNEL_SIZE)))
-  endif
 endef
 
 define Device/Build/image
@@ -858,7 +853,7 @@ define BuildImage
 		$(call Image/Prepare)
 
   else
-    image_prepare:
+    image_prepare: compile compile-dtb
 		rm -rf $(KDIR)/tmp
 		mkdir -p $(BIN_DIR) $(KDIR)/tmp
   endif
