@@ -671,7 +671,6 @@ define Device/Build/compile
 
 endef
 
-ifndef IB
 define Device/Build/dtb
   ifndef BUILD_DTS_$(1)
   BUILD_DTS_$(1) := 1
@@ -693,7 +692,6 @@ define Device/Build/dtbo
   endif
 
 endef
-endif
 
 define Device/Build/kernel
   $$(eval $$(foreach dts,$$(DEVICE_DTS), \
