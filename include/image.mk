@@ -210,7 +210,7 @@ endef
 # $(3) extra CPP flags
 # $(4) extra DTC flags
 define Image/BuildDTB/sub
-	$(TARGET_CROSS)cpp -nostdinc -x assembler-with-cpp \
+	$(if IB,,$(TARGET_CROSS))cpp -nostdinc -x assembler-with-cpp \
 		$(DTS_CPPFLAGS) \
 		-I$(DTS_DIR) \
 		-I$(DTS_DIR)/include \
