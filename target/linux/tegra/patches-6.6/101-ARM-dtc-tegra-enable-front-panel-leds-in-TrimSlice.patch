@@ -1,6 +1,14 @@
 --- a/arch/arm/boot/dts/nvidia/tegra20-trimslice.dts
 +++ b/arch/arm/boot/dts/nvidia/tegra20-trimslice.dts
-@@ -201,16 +201,17 @@
+@@ -2,6 +2,7 @@
+ /dts-v1/;
+ 
+ #include <dt-bindings/input/input.h>
++#include <dt-bindings/leds/common.h>
+ #include "tegra20.dtsi"
+ #include "tegra20-cpu-opp.dtsi"
+ 
+@@ -201,16 +202,17 @@
  			conf_ata {
  				nvidia,pins = "ata", "atc", "atd", "ate",
  					"crtp", "dap2", "dap3", "dap4", "dta",
@@ -23,20 +31,26 @@
  				nvidia,pull = <TEGRA_PIN_PULL_NONE>;
  				nvidia,tristate = <TEGRA_PIN_DISABLE>;
  			};
-@@ -408,6 +409,20 @@
+@@ -408,6 +410,26 @@
  		};
  	};
  
-+	gpio-leds {
++	leds {
 +		compatible = "gpio-leds";
 +
-+		ds2 {
-+			label = "trimslice:green:right";
++		led-ds2 {
++			label = "green:right";
++			color = <LED_COLOR_ID_GREEN>;
++			function = LED_FUNCTION_STATUS;
++			function-enumerator = <1>;
 +			gpios = <&gpio TEGRA_GPIO(D, 2) GPIO_ACTIVE_LOW>;
 +		};
 +
-+		ds3 {
-+			label = "trimslice:green:left";
++		led-ds3 {
++			label = "green:left";
++			color = <LED_COLOR_ID_GREEN>;
++			function = LED_FUNCTION_STATUS;
++			function-enumerator = <2>;
 +			gpios = <&gpio TEGRA_GPIO(BB, 5) GPIO_ACTIVE_LOW>;
 +		};
 +	};
