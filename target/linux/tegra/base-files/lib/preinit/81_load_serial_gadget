@@ -1,0 +1,11 @@
+. /lib/functions.sh
+
+load_serial_gadget() {
+	case $(board_name) in
+	nvidia,p2371-2180)
+		modprobe g_serial
+		;;
+	esac
+}
+
+boot_hook_add preinit_main load_serial_gadget

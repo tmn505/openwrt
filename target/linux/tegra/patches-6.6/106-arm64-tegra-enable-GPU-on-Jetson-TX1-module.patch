@@ -1,0 +1,22 @@
+From 6ca7b3ea62d3e002554ac878aceaf5e00a011f96 Mon Sep 17 00:00:00 2001
+From: Tomasz Maciej Nowak <tmn505@gmail.com>
+Date: Tue, 16 Jul 2024 20:41:28 +0200
+Subject: [PATCH 5/6] arm64: tegra: enable GPU on Jetson TX1 module
+
+Now that active cooling is somewhat working we can enable GPU.
+
+Signed-off-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi
+@@ -23,6 +23,7 @@
+ 	};
+ 
+ 	gpu@57000000 {
++		status = "okay";
+ 		vdd-supply = <&vdd_gpu>;
+ 	};
+ 
