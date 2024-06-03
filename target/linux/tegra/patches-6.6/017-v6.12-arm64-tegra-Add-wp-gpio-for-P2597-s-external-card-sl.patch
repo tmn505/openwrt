@@ -1,0 +1,27 @@
+From ebe899563a83c9bb578248eb4a4d56414275d9fa Mon Sep 17 00:00:00 2001
+From: Diogo Ivo <diogo.ivo@tecnico.ulisboa.pt>
+Date: Thu, 15 Aug 2024 16:50:40 +0100
+Subject: [PATCH 2/2] arm64: tegra: Add wp-gpio for P2597's external card slot
+
+Add the definition for the wp-gpio of the P2597's external card slot,
+enabling this functionality.
+
+Tested on a P2597 board.
+
+Signed-off-by: Diogo Ivo <diogo.ivo@tecnico.ulisboa.pt>
+Tested-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p2597.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p2597.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p2597.dtsi
+@@ -1517,6 +1517,7 @@
+ 		bus-width = <4>;
+ 
+ 		cd-gpios = <&gpio TEGRA_GPIO(Z, 1) GPIO_ACTIVE_LOW>;
++		wp-gpios = <&gpio TEGRA_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
+ 
+ 		vqmmc-supply = <&vddio_sdmmc>;
+ 		vmmc-supply = <&vdd_3v3_sd>;

@@ -1914,7 +1914,8 @@ $(eval $(call KernelPackage,chaoskey))
 
 define KernelPackage/usb-xhci-tegra
   TITLE:=xHCI support for Tegra SoCs
-  DEPENDS:=@TARGET_tegra +kmod-usb-xhci-hcd +kmod-usb-roles
+  DEPENDS:=@TARGET_tegra +kmod-usb-xhci-hcd +kmod-usb-roles \
+	+TARGET_tegra_armv8:t210-usb-firmware
   KCONFIG:= \
 	  CONFIG_USB_XHCI_TEGRA \
 	  CONFIG_PHY_TEGRA_XUSB=m

@@ -1,0 +1,29 @@
+From 87b90082179daf87969ad9ff44032acc59d9086a Mon Sep 17 00:00:00 2001
+From: Diogo Ivo <diogo.ivo@tecnico.ulisboa.pt>
+Date: Mon, 23 Sep 2024 19:24:51 +0100
+Subject: [PATCH] arm64: tegra: Add SDMMC sdr104-offsets for Tegra X1
+
+Define the sdr104-specific offsets, preventing the driver from
+defaulting to the 1.8V offsets, which cause the system to hang during
+the SDR104 mode calibration.
+
+The zeroing of these values was chosen since it restores functionality
+and no better suggestions are provided by the Tegra X1 TRM.
+
+Signed-off-by: Diogo Ivo <diogo.ivo@tecnico.ulisboa.pt>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+@@ -1218,6 +1218,8 @@
+ 		nvidia,pad-autocal-pull-down-offset-3v3 = <0x7d>;
+ 		nvidia,pad-autocal-pull-up-offset-1v8 = <0x7b>;
+ 		nvidia,pad-autocal-pull-down-offset-1v8 = <0x7b>;
++		nvidia,pad-autocal-pull-up-offset-sdr104 = <0x0>;
++		nvidia,pad-autocal-pull-down-offset-sdr104 = <0x0>;
+ 		nvidia,default-tap = <0x2>;
+ 		nvidia,default-trim = <0x4>;
+ 		assigned-clocks = <&tegra_car TEGRA210_CLK_SDMMC4>,

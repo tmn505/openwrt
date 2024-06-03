@@ -211,6 +211,9 @@ define Package/cypress-firmware-4354-sdio/install
 		../cypress/cyfmac4354-sdio.bin \
 		$(1)/lib/firmware/brcm/brcmfmac4354-sdio.bin
 	$(LN) \
+		../cypress/cyfmac4354-sdio.bin \
+		$(1)/lib/firmware/brcm/brcmfmac4354-sdio.nvidia,p2371-2180.bin
+	$(LN) \
 		../cypress/cyfmac4354-sdio.clm_blob \
 		$(1)/lib/firmware/brcm/brcmfmac4354-sdio.clm_blob
 endef

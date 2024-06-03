@@ -1,0 +1,48 @@
+From a50d5dcd28154c1a38aa1d72b1678715aecf5464 Mon Sep 17 00:00:00 2001
+From: Tomasz Maciej Nowak <tmn505@gmail.com>
+Date: Wed, 21 Aug 2024 20:58:05 +0200
+Subject: [PATCH 3/3] arm64: tegra: Wire up WiFi on Jetson TX1 module
+
+P2180 modules have WiFi in form of BCM4354 chip, and kernel driver
+supports this one, so enable it for all users. The necessary calibration
+file can be obtained from Jetson Linux Archive. nvram.txt file is
+located in "Driver Package (BSP)" in
+nv_tegra/l4t_deb_packages/nvidia-l4t-firmware_<version>_arm64.deb
+archive. The rest of necessary blobs can be obtained from official
+Linux Firmware repository or (newer ones) from Infineon
+ifx-linux-firmware repository (look in older releases).
+
+Signed-off-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ .../arm64/boot/dts/nvidia/tegra210-p2180.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi
+@@ -340,6 +340,25 @@
+ 		nvidia,sys-clock-req-active-high;
+ 	};
+ 
++	mmc@700b0200 {
++		status = "okay";
++		bus-width = <4>;
++		non-removable;
++		power-gpios = <&gpio TEGRA_GPIO(H, 0) GPIO_ACTIVE_HIGH>;
++		vqmmc-supply = <&vdd_1v8>;
++		vmmc-supply = <&vdd_3v3_sys>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		wifi@1 {
++			compatible = "brcm,bcm4354-fmac";
++			reg = <1>;
++			interrupt-parent = <&gpio>;
++			interrupts = <TEGRA_GPIO(H, 2) IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "host-wake";
++		};
++	};
++
+ 	/* eMMC */
+ 	mmc@700b0600 {
+ 		status = "okay";
