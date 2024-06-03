@@ -1,0 +1,27 @@
+From 344cb1d9e869381a9d47d41b74b3c386ede1976b Mon Sep 17 00:00:00 2001
+From: Tomasz Maciej Nowak <tmn505@gmail.com>
+Date: Tue, 6 Aug 2024 22:12:58 +0200
+Subject: [PATCH] Revert "Bluetooth: hci_bcm: do not mark valid bd_addr as
+ invalid"
+
+This reverts commit 56b7f325db139c9255b1eb1d1e741576d5f8fa34, as driver
+sets the invalid flag, there is no way to asign address provided by
+local-bd-address property.
+
+Signed-off-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+---
+ drivers/bluetooth/hci_bcm.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/drivers/bluetooth/hci_bcm.c
++++ b/drivers/bluetooth/hci_bcm.c
+@@ -643,8 +643,7 @@ static int bcm_setup(struct hci_uart *hu
+ 	 * Allow the bootloader to set a valid address through the
+ 	 * device tree.
+ 	 */
+-	if (test_bit(HCI_QUIRK_INVALID_BDADDR, &hu->hdev->quirks))
+-		set_bit(HCI_QUIRK_USE_BDADDR_PROPERTY, &hu->hdev->quirks);
++	set_bit(HCI_QUIRK_USE_BDADDR_PROPERTY, &hu->hdev->quirks);
+ 
+ 	if (!bcm_request_irq(bcm))
+ 		err = bcm_setup_sleep(hu);

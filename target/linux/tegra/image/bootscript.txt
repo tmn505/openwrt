@@ -1,8 +1,15 @@
 part uuid ${devtype} ${devnum}:2 ptuuid
 
 setenv bootargs "root=PARTUUID=${ptuuid} rw rootwait"
+if test "${cpu}" = armv7; then
+	setenv kernel_name zImage
+	setenv boot_cmd bootz
+elif test "${cpu}" = armv8; then
+	setenv kernel_name Image
+	setenv boot_cmd booti
+fi
 
-load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} zImage
+load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} ${kernel_name}
 load ${devtype} ${devnum}:${bootpart} ${fdt_addr_r} ${soc}-${board}.dtb
 
-bootz ${kernel_addr_r} - ${fdt_addr_r}
+${boot_cmd} ${kernel_addr_r} - ${fdt_addr_r}

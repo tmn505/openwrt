@@ -1,0 +1,14 @@
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi
+@@ -8,9 +8,11 @@
+ 	compatible = "nvidia,p2180", "nvidia,tegra210";
+ 
+ 	aliases {
++		mmc1 = "/mmc@700b0200";
+ 		rtc0 = "/i2c@7000d000/pmic@3c";
+ 		rtc1 = "/rtc@7000e000";
+ 		serial0 = &uarta;
++		serial3 = &uartd;
+ 	};
+ 
+ 	chosen {

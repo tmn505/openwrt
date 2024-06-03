@@ -1,0 +1,127 @@
+From 99beee4f0cd5d3a6f30e1829d823c11cb8b54bac Mon Sep 17 00:00:00 2001
+From: Tomasz Maciej Nowak <tmn505@gmail.com>
+Date: Thu, 18 Jul 2024 15:46:16 +0200
+Subject: [PATCH 2/2] arm64: tegra: add cooling maps for Jetson TX1 module
+
+The PWM signals are indeed inverted, so work around it by specifying
+colling levels in reverse order, since driver does not implement
+inverted polarity.
+
+Signed-off-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+---
+ .../arm64/boot/dts/nvidia/tegra210-p2180.dtsi | 85 +++++++++++++++++++
+ .../arm64/boot/dts/nvidia/tegra210-p2597.dtsi |  4 +-
+ 2 files changed, 88 insertions(+), 1 deletion(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi
+@@ -402,6 +402,91 @@
+ 		method = "smc";
+ 	};
+ 
++	thermal-zones {
++		cpu-thermal {
++			trips {
++				cpu_trip_critical: critical {
++					temperature = <94000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++
++				cpu_trip_hot: hot {
++					temperature = <86000>;
++					hysteresis = <1000>;
++					type = "hot";
++				};
++
++				cpu_trip_active_78: active-78 {
++					temperature = <78000>;
++					hysteresis = <2000>;
++					type = "active";
++				};
++
++				cpu_trip_active_70: active-70 {
++					temperature = <70000>;
++					hysteresis = <2000>;
++					type = "active";
++				};
++
++				cpu_trip_active_60: active-60 {
++					temperature = <60000>;
++					hysteresis = <2000>;
++					type = "active";
++				};
++
++				cpu_trip_active_50: active-50 {
++					temperature = <50000>;
++					hysteresis = <2000>;
++					type = "active";
++				};
++
++				cpu_trip_passive: passive {
++					temperature = <23000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++			};
++
++			cooling-maps {
++				cpu-critical {
++					cooling-device = <&fan 6 6>;
++					trip = <&cpu_trip_critical>;
++				};
++
++				cpu-hot {
++					cooling-device = <&fan 5 5>;
++					trip = <&cpu_trip_hot>;
++				};
++
++				cpu-active-78 {
++					cooling-device = <&fan 4 4>;
++					trip = <&cpu_trip_active_78>;
++				};
++
++				cpu-active-70 {
++					cooling-device = <&fan 3 3>;
++					trip = <&cpu_trip_active_70>;
++				};
++
++				cpu-active-60 {
++					cooling-device = <&fan 2 2>;
++					trip = <&cpu_trip_active_60>;
++				};
++
++				cpu-active-50 {
++					cooling-device = <&fan 1 1>;
++					trip = <&cpu_trip_active_50>;
++				};
++
++				cpu-passive {
++					cooling-device = <&fan 0 0>;
++					trip = <&cpu_trip_passive>;
++				};
++			};
++		};
++	};
++
+ 	vdd_gpu: regulator-vdd-gpu {
+ 		compatible = "pwm-regulator";
+ 		pwms = <&pwm 1 8000>;
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p2597.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p2597.dtsi
+@@ -1605,12 +1605,14 @@
+ 		};
+ 	};
+ 
+-	pwm-fan {
++	fan: pwm-fan {
+ 		compatible = "pwm-fan";
+ 		pwms = <&pwm 3 45334>;
+ 		fan-supply = <&vdd_fan>;
+ 		interrupt-parent = <&gpio>;
+ 		interrupts = <TEGRA_GPIO(K, 7) IRQ_TYPE_EDGE_BOTH>;
++		cooling-levels = <255 192 160 128 96 64 0>;
++		#cooling-cells = <2>;
+ 	};
+ 
+ 	vdd_sys_mux: regulator-vdd-sys-mux {

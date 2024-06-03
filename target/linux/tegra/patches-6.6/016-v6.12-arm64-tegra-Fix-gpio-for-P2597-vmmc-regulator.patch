@@ -1,0 +1,28 @@
+From 46a26db82748a9434fae662738ff80e350b179ee Mon Sep 17 00:00:00 2001
+From: Diogo Ivo <diogo.ivo@tecnico.ulisboa.pt>
+Date: Thu, 15 Aug 2024 16:50:39 +0100
+Subject: [PATCH 1/2] arm64: tegra: Fix gpio for P2597 vmmc regulator
+
+The current declaration is off-by-one and actually corresponds to the
+wp-gpio of the external slot.
+
+Tested on a P2597 board.
+
+Signed-off-by: Diogo Ivo <diogo.ivo@tecnico.ulisboa.pt>
+Tested-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p2597.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p2597.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p2597.dtsi
+@@ -1603,7 +1603,7 @@
+ 		regulator-name = "VDD_3V3_SD";
+ 		regulator-min-microvolt = <3300000>;
+ 		regulator-max-microvolt = <3300000>;
+-		gpio = <&gpio TEGRA_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
++		gpio = <&gpio TEGRA_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
+ 		enable-active-high;
+ 		vin-supply = <&vdd_3v3_sys>;
+ 
