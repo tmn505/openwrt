@@ -1,0 +1,21 @@
+#!/bin/ash
+
+[ "$ACTION" = "add" ] || exit 0
+
+PHYNBR=${DEVPATH##*/phy}
+
+[ -n $PHYNBR ] || exit 0
+
+. /lib/functions.sh
+. /lib/functions/system.sh
+
+board=$(board_name)
+
+case "$board" in
+	nvidia,p2371-2180)
+		[ "$PHYNBR" -eq 0 ] && \
+			get_mac_binary /sys/devices/platform/7000c500.i2c/i2c-1/1-0050/eeprom 0x32 \
+				| awk -F':' 'OFS=":" {print $6,$5,$4,$3,$2,$1}' \
+				> /sys${DEVPATH}/macaddress
+		;;
+esac

@@ -34,7 +34,7 @@ define Device/Default
   DEVICE_DTS_DIR := $$(DTS_DIR)/nvidia
   IMAGES := sdcard.img.gz
   IMAGE/sdcard.img.gz := append-rootfs | pad-extra 128k | tegra-sdcard | gzip | append-metadata
-  KERNEL_NAME := zImage
+  KERNEL_NAME := $(if $(CONFIG_ARCH_64BIT),Image,zImage)
   KERNEL := kernel-bin
   PROFILES := Default
 endef

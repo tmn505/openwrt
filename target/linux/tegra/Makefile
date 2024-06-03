@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 BOARD := tegra
 BOARDNAME := NVIDIA Tegra
 FEATURES := audio boot-part display ext4 fpu gpio pci pcie rootfs-part rtc squashfs usb
-SUBTARGETS := cortexa9
+SUBTARGETS := cortexa9 cortexa57
 
 KERNEL_PATCHVER := 6.6
 
