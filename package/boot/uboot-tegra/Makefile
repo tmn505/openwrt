@@ -20,7 +20,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define U-Boot/Default
   BUILD_TARGET := tegra
-  BUILD_SUBTARGET := generic
+  BUILD_SUBTARGET := armv7
   HIDDEN := y
 endef
 
