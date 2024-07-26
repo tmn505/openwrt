@@ -33,6 +33,7 @@ define KernelPackage/bluetooth
   DEPENDS:=@USB_SUPPORT +kmod-usb-core +kmod-crypto-hash +kmod-crypto-ecb +kmod-lib-crc16 +kmod-hid +kmod-crypto-cmac +kmod-regmap-core +kmod-crypto-ecdh
   KCONFIG:= \
 	CONFIG_BT \
+	CONFIG_BT_BCM \
 	CONFIG_BT_BREDR=y \
 	CONFIG_BT_DEBUGFS=n \
 	CONFIG_BT_LE=y \
@@ -43,10 +44,11 @@ define KernelPackage/bluetooth
 	CONFIG_BT_HCIBTUSB_MTK=y \
 	CONFIG_BT_HCIBTUSB_RTL=y \
 	CONFIG_BT_HCIUART \
-	CONFIG_BT_HCIUART_BCM=n \
+	CONFIG_BT_HCIUART_BCM=y \
 	CONFIG_BT_HCIUART_INTEL=n \
 	CONFIG_BT_HCIUART_H4 \
 	CONFIG_BT_HCIUART_NOKIA=n \
+	CONFIG_BT_HCIUART_SERDEV=y \
 	CONFIG_BT_HIDP
   $(call AddDepends/rfkill)
   FILES:= \
@@ -55,11 +57,12 @@ define KernelPackage/bluetooth
 	$(LINUX_DIR)/net/bluetooth/bnep/bnep.ko \
 	$(LINUX_DIR)/net/bluetooth/hidp/hidp.ko \
 	$(LINUX_DIR)/drivers/bluetooth/hci_uart.ko \
+	$(if $(CONFIG_SERIAL_DEV_BUS),$(LINUX_DIR)/drivers/bluetooth/btbcm.ko) \
 	$(LINUX_DIR)/drivers/bluetooth/btusb.ko \
 	$(LINUX_DIR)/drivers/bluetooth/btintel.ko \
 	$(LINUX_DIR)/drivers/bluetooth/btrtl.ko \
 	$(LINUX_DIR)/drivers/bluetooth/btmtk.ko@ge5.17
-  AUTOLOAD:=$(call AutoProbe,bluetooth rfcomm bnep hidp hci_uart btusb)
+  AUTOLOAD:=$(call AutoProbe,bluetooth rfcomm bnep hidp hci_uart btbcm btusb)
 endef
 
 define KernelPackage/bluetooth/description
