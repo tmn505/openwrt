@@ -7,20 +7,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_VERSION := 2024.04
-PKG_RELEASE:=1
+PKG_RELEASE := 1
 
 PKG_HASH := 18a853fe39fad7ad03a90cc2d4275aeaed6da69735defac3492b80508843dd4a
 
 PKG_MAINTAINER := Tomasz Maciej Nowak <tmn505@gmail.com>
 
-UBOOT_USE_INTREE_DTC:=1
+UBOOT_USE_INTREE_DTC := 1
 
 include $(INCLUDE_DIR)/u-boot.mk
 include $(INCLUDE_DIR)/package.mk
 
 define U-Boot/Default
   BUILD_TARGET := tegra
-  BUILD_SUBTARGET := generic
+  BUILD_SUBTARGET := cortexa9
   HIDDEN := y
 endef
 
