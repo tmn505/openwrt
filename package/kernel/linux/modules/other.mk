@@ -27,51 +27,55 @@ endef
 $(eval $(call KernelPackage,6lowpan))
 
 
-define KernelPackage/bluetooth
+define KernelPackage/btuart
   SUBMENU:=$(OTHER_MENU)
-  TITLE:=Bluetooth support
-  DEPENDS:=@USB_SUPPORT +kmod-usb-core +kmod-crypto-hash +kmod-crypto-ecb +kmod-lib-crc16 +kmod-hid +kmod-crypto-cmac +kmod-regmap-core +kmod-crypto-ecdh
+  TITLE:=Bluetooth UART support
+  DEPENDS:=+kmod-bluetooth +kmod-regmap-core
   KCONFIG:= \
-	CONFIG_BT \
-	CONFIG_BT_BREDR=y \
-	CONFIG_BT_DEBUGFS=n \
-	CONFIG_BT_LE=y \
-	CONFIG_BT_RFCOMM \
-	CONFIG_BT_BNEP \
-	CONFIG_BT_HCIBTUSB \
-	CONFIG_BT_HCIBTUSB_BCM=n \
-	CONFIG_BT_HCIBTUSB_MTK=y \
-	CONFIG_BT_HCIBTUSB_RTL=y \
 	CONFIG_BT_HCIUART \
 	CONFIG_BT_HCIUART_BCM=n \
 	CONFIG_BT_HCIUART_INTEL=n \
 	CONFIG_BT_HCIUART_H4 \
-	CONFIG_BT_HCIUART_NOKIA=n \
-	CONFIG_BT_HIDP
+	CONFIG_BT_HCIUART_NOKIA=n
+  $(call AddDepends/rfkill)
+  FILES:= $(LINUX_DIR)/drivers/bluetooth/hci_uart.ko
+  AUTOLOAD:=$(call AutoProbe,hci_uart)
+endef
+
+define KernelPackage/btuart/description
+ Kernel support for Bluetooth devices connected by UART
+endef
+
+$(eval $(call KernelPackage,btuart))
+
+define KernelPackage/btusb
+  SUBMENU:=$(OTHER_MENU)
+  TITLE:=Bluetooth USB support
+  DEPENDS:=@USB_SUPPORT +kmod-bluetooth +kmod-hid +kmod-regmap-core +kmod-usb-core
+  KCONFIG:= \
+	CONFIG_BT_HCIBTUSB \
+	CONFIG_BT_HCIBTUSB_BCM=n \
+	CONFIG_BT_HCIBTUSB_MTK=y \
+	CONFIG_BT_HCIBTUSB_RTL=y \
   $(call AddDepends/rfkill)
   FILES:= \
-	$(LINUX_DIR)/net/bluetooth/bluetooth.ko \
-	$(LINUX_DIR)/net/bluetooth/rfcomm/rfcomm.ko \
-	$(LINUX_DIR)/net/bluetooth/bnep/bnep.ko \
-	$(LINUX_DIR)/net/bluetooth/hidp/hidp.ko \
-	$(LINUX_DIR)/drivers/bluetooth/hci_uart.ko \
 	$(LINUX_DIR)/drivers/bluetooth/btusb.ko \
 	$(LINUX_DIR)/drivers/bluetooth/btintel.ko \
 	$(LINUX_DIR)/drivers/bluetooth/btrtl.ko \
 	$(LINUX_DIR)/drivers/bluetooth/btmtk.ko@ge5.17
-  AUTOLOAD:=$(call AutoProbe,bluetooth rfcomm bnep hidp hci_uart btusb)
+  AUTOLOAD:=$(call AutoProbe,btusb)
 endef
 
-define KernelPackage/bluetooth/description
- Kernel support for Bluetooth devices
+define KernelPackage/btusb/description
+ Kernel support for Bluetooth devices connected by USB
 endef
 
-$(eval $(call KernelPackage,bluetooth))
+$(eval $(call KernelPackage,btusb))
 
 define KernelPackage/ath3k
   SUBMENU:=$(OTHER_MENU)
   TITLE:=ATH3K Kernel Module support
-  DEPENDS:=+kmod-bluetooth +ar3k-firmware
+  DEPENDS:=+kmod-bluetooth +kmod-btusb +ar3k-firmware
   KCONFIG:= \
 	CONFIG_BT_ATH3K \
 	CONFIG_BT_HCIUART_ATH3K=y

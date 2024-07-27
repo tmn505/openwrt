@@ -1614,3 +1614,31 @@ define KernelPackage/qrtr-mhi/description
 endef
 
 $(eval $(call KernelPackage,qrtr-mhi))
+
+define KernelPackage/bluetooth
+  SUBMENU:=$(NETWORK_SUPPORT_MENU)
+  TITLE:=Bluetooth support
+  DEPENDS:=+kmod-crypto-ecdh +kmod-hid +kmod-lib-crc16
+  HIDDEN:=1
+  KCONFIG:= \
+	CONFIG_BT \
+	CONFIG_BT_BREDR=y \
+	CONFIG_BT_DEBUGFS=n \
+	CONFIG_BT_LE=y \
+	CONFIG_BT_RFCOMM \
+	CONFIG_BT_BNEP \
+	CONFIG_BT_HIDP
+  $(call AddDepends/rfkill)
+  FILES:= \
+	$(LINUX_DIR)/net/bluetooth/bluetooth.ko \
+	$(LINUX_DIR)/net/bluetooth/rfcomm/rfcomm.ko \
+	$(LINUX_DIR)/net/bluetooth/bnep/bnep.ko \
+	$(LINUX_DIR)/net/bluetooth/hidp/hidp.ko
+  AUTOLOAD:=$(call AutoProbe,bluetooth rfcomm bnep hidp)
+endef
+
+define KernelPackage/bluetooth/description
+ Kernel support for Bluetooth devices
+endef
+
+$(eval $(call KernelPackage,bluetooth))
