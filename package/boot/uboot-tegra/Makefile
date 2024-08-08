@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017-2019 Tomasz Maciej Nowak <tmn505@gmail.com>
+# Copyright (C) 2017-2024 Tomasz Maciej Nowak <tmn505@gmail.com>
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -20,19 +20,26 @@ include $(INCLUDE_DIR)/package.mk
 
 define U-Boot/Default
   BUILD_TARGET := tegra
-  BUILD_SUBTARGET := cortexa9
   HIDDEN := y
 endef
 
+define U-Boot/jetson-tx1
+  NAME := NVIDIA Jetson TX1
+  BUILD_SUBTARGET := cortexa57
+  BUILD_DEVICES := nvidia_jetson-tx1
+  UBOOT_CONFIG := p2371-2180
+endef
+UBOOT_TARGETS += jetson-tx1
+
 define U-Boot/trimslice
   NAME := CompuLab TrimSlice
+  BUILD_SUBTARGET := cortexa9
   BUILD_DEVICES := compulab_trimslice
   UBOOT_IMAGE := trimslice-mmc.img trimslice-spi.img
   SOC := tegra20
   VENDOR := compulab
 endef
-
-UBOOT_TARGETS := trimslice
+UBOOT_TARGETS += trimslice
 
 define Build/bct-image
 	$(CP) $(PKG_BUILD_DIR)/u-boot-dtb-tegra.bin $(PKG_BUILD_DIR)/u-boot.bin
@@ -50,7 +57,7 @@ endef
 
 define Build/Compile
 	$(call Build/Compile/U-Boot)
-	$(call Build/bct-image)
+	$(if $(CONFIG_ARCH_64BIT),,$(call Build/bct-image))
 endef
 
 define Build/InstallDev
