@@ -1,0 +1,27 @@
+From c63792769405eba7ba04787cf0426495f062d0bd Mon Sep 17 00:00:00 2001
+From: Tomasz Maciej Nowak <tmn505@gmail.com>
+Date: Thu, 8 Aug 2024 20:54:34 +0200
+Subject: [PATCH 2/2] ARM: tegra: p2371-2180: pass bt and wifi mac to booting
+ os
+
+P2180 has Bluetooth+WiFi module integrated and while Ethernet MAC address
+is passed from cboot FDT, the addresses for Bluetooth and WiFi aren't.
+Therefore do the same for them in nodes specified by compatible, so
+booted OS can use them.
+
+Signed-off-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+---
+ board/nvidia/p2371-2180/p2371-2180.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/board/nvidia/p2371-2180/p2371-2180.c
++++ b/board/nvidia/p2371-2180/p2371-2180.c
+@@ -93,6 +93,8 @@ static const char * const nodes[] = {
+ int ft_board_setup(void *fdt, struct bd_info *bd)
+ {
+ 	ft_mac_address_setup(fdt);
++	ft_btmac_address_setup(fdt, "brcm,bcm43540-bt");
++	ft_wifimac_address_setup(fdt, "brcm,bcm4354-fmac");
+ 	ft_carveout_setup(fdt, nodes, ARRAY_SIZE(nodes));
+ 
+ 	return 0;
