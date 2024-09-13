@@ -501,6 +501,63 @@ endef
 
 $(eval $(call KernelPackage,drm-radeon))
 
+
+define KernelPackage/drm-nouveau
+  SUBMENU:=$(VIDEO_MENU)
+  TITLE:=Nouveau DRM driver
+  DEPENDS:=@DISPLAY_SUPPORT +kmod-backlight +kmod-drm +kmod-drm-display-helper \
+	+kmod-drm-exec +kmod-drm-kms-helper +kmod-drm-ttm +kmod-drm-ttm-helper \
+	+kmod-hwmon-core +kmod-i2c-algo-bit +TARGET_x86:kmod-acpi-video \
+	+TARGET_tegra_armv8:kmod-drm-tegra +TARGET_tegra_armv8:gm20b-firmware
+  KCONFIG:= \
+	CONFIG_DRM_NOUVEAU \
+	CONFIG_DRM_NOUVEAU_BACKLIGHT=y \
+	CONFIG_NOUVEAU_DEBUG=5 \
+	CONFIG_NOUVEAU_DEBUG_DEFAULT=3 \
+	CONFIG_NOUVEAU_DEBUG_MMU=n \
+	CONFIG_NOUVEAU_DEBUG_PUSH=n \
+	CONFIG_NOUVEAU_PLATFORM_DRIVER=y
+  FILES:= \
+	$(LINUX_DIR)/drivers/gpu/drm/nouveau/nouveau.ko \
+	$(LINUX_DIR)/drivers/gpu/drm/scheduler/gpu-sched.ko
+  AUTOLOAD:=$(call AutoProbe,nouveau)
+endef
+
+define KernelPackage/drm-nouveau/description
+ GPU driver for majority of NVIDIA Tegra SoCs.
+endef
+
+$(eval $(call KernelPackage,drm-nouveau))
+
+
+define KernelPackage/drm-tegra
+  SUBMENU:=$(VIDEO_MENU)
+  TITLE:=Tegra DRM driver
+  DEPENDS:=@TARGET_tegra +kmod-backlight +kmod-drm +kmod-drm-display-helper \
+	+kmod-drm-kms-helper +TARGET_tegra_armv8:t210-vic-firmware
+  KCONFIG:= \
+	CONFIG_DRM_TEGRA \
+	CONFIG_DRM_TEGRA_DEBUG=n \
+	CONFIG_DRM_TEGRA_STAGING=n \
+	CONFIG_DRM_FBDEV_EMULATION=y \
+	CONFIG_DRM_FBDEV_OVERALLOC=100 \
+	CONFIG_TEGRA_HOST1X \
+	CONFIG_TEGRA_HOST1X_CONTEXT_BUS=y \
+	CONFIG_TEGRA_HOST1X_FIREWALL=y
+  FILES:= \
+	$(LINUX_DIR)/drivers/gpu/drm/display/drm_dp_aux_bus.ko \
+	$(LINUX_DIR)/drivers/gpu/drm/tegra/tegra-drm.ko \
+	$(LINUX_DIR)/drivers/gpu/host1x/host1x.ko
+  AUTOLOAD:=$(call AutoProbe,host1x tegra-drm)
+endef
+
+define KernelPackage/drm-tegra/description
+ GPU driver for all of NVIDIA Tegra SoCs.
+endef
+
+$(eval $(call KernelPackage,drm-tegra))
+
+
 #
 # Video Capture
 #
