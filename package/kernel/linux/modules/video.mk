@@ -573,7 +573,8 @@ define KernelPackage/video-core
 	CONFIG_V4L_PLATFORM_DRIVERS=y \
 	CONFIG_MEDIA_PLATFORM_DRIVERS=y
   FILES:= \
-	$(LINUX_DIR)/drivers/media/$(V4L2_DIR)/videodev.ko
+	$(LINUX_DIR)/drivers/media/$(V4L2_DIR)/videodev.ko \
+	$(if $(CONFIG_MEDIA_CONTROLLER),$(LINUX_DIR)/drivers/media/mc/mc.ko)
   AUTOLOAD:=$(call AutoLoad,60,videodev)
 endef
 
@@ -612,7 +613,7 @@ define KernelPackage/video-videobuf2
 	$(LINUX_DIR)/drivers/media/common/videobuf2/videobuf2-common.ko \
 	$(LINUX_DIR)/drivers/media/common/videobuf2/videobuf2-v4l2.ko \
 	$(LINUX_DIR)/drivers/media/common/videobuf2/videobuf2-memops.ko \
-	$(LINUX_DIR)/drivers/media/common/videobuf2/videobuf2-vmalloc.ko
+	$(if $(CONFIG_VIDEOBUF2_VMALLOC),$(LINUX_DIR)/drivers/media/common/videobuf2/videobuf2-vmalloc.ko)
   AUTOLOAD:=$(call AutoLoad,65,videobuf2-core videobuf-v4l2 videobuf2-memops videobuf2-vmalloc)
   $(call AddDepends/video)
 endef
@@ -1333,3 +1334,27 @@ define KernelPackage/video-tw686x/description
 endef
 
 $(eval $(call KernelPackage,video-tw686x))
+
+define KernelPackage/video-tegra-vi
+  TITLE:=Tegra SoC VideoInput
+  DEPENDS:=@TARGET_tegra +kmod-drm-tegra +kmod-video-dma-contig +kmod-video-videobuf2
+  KCONFIG:= \
+	CONFIG_STAGING_MEDIA=y \
+	CONFIG_STAGING_MEDIA_DEPRECATED=n \
+	CONFIG_VIDEO_TEGRA \
+	CONFIG_VIDEO_TEGRA_TPG=n \
+	CONFIG_VIDEO_MAX96712=n
+  FILES:= \
+	$(LINUX_DIR)/drivers/staging/media/tegra-video/tegra-video.ko \
+	$(LINUX_DIR)/drivers/media/$(V4L2_DIR)/v4l2-async.ko \
+	$(LINUX_DIR)/drivers/media/$(V4L2_DIR)/v4l2-dv-timings.ko \
+	$(LINUX_DIR)/drivers/media/$(V4L2_DIR)/v4l2-fwnode.ko
+  AUTOLOAD:=$(call AutoProbe,tegra-video)
+  $(call AddDepends/video)
+endef
+
+define KernelPackage/video-tegra-vi/description
+ Tegra SoC VideoInput driver
+endef
+
+$(eval $(call KernelPackage,video-tegra-vi))

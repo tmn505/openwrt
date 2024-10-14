@@ -6,7 +6,7 @@ define Device/nvidia_jetson-tx1
 	kmod-bluetooth kmod-brcmfmac kmod-drm-nouveau kmod-drm-tegra \
 	kmod-sound-soc-tegra210 kmod-usb-gadget-serial kmod-usb-hid \
 	kmod-usb-net-rtl8152 kmod-usb-udc-tegra kmod-usb-xhci-tegra \
-	wpad-basic-mbedtls
+	kmod-video-tegra-vi wpad-basic-mbedtls
   SUPPORTED_DEVICES := nvidia,p2371-2180
 endef
 TARGET_DEVICES += nvidia_jetson-tx1
