@@ -288,6 +288,83 @@ endef
 $(eval $(call KernelPackage,sound-soc-imx-sgtl5000))
 
 
+define KernelPackage/sound-soc-tegra210
+  TITLE:=Tegra 210 SoC audio support
+  KCONFIG:= \
+	CONFIG_SND_AUDIO_GRAPH_CARD \
+	CONFIG_SND_HDA_TEGRA \
+	CONFIG_SND_SOC_TEGRA \
+	CONFIG_SND_SOC_TEGRA210_ADMAIF \
+	CONFIG_SND_SOC_TEGRA210_ADX \
+	CONFIG_SND_SOC_TEGRA210_AHUB \
+	CONFIG_SND_SOC_TEGRA210_AMX \
+	CONFIG_SND_SOC_TEGRA210_DMIC \
+	CONFIG_SND_SOC_TEGRA210_I2S \
+	CONFIG_SND_SOC_TEGRA210_MIXER \
+	CONFIG_SND_SOC_TEGRA210_MVC \
+	CONFIG_SND_SOC_TEGRA210_OPE \
+	CONFIG_SND_SOC_TEGRA210_SFC \
+	CONFIG_SND_SOC_TEGRA_AUDIO_GRAPH_CARD \
+	CONFIG_SND_SOC_TEGRA186_ASRC=n \
+	CONFIG_SND_SOC_TEGRA186_DSPK=n \
+	CONFIG_SND_SOC_TEGRA20_AC97=n \
+	CONFIG_SND_SOC_TEGRA20_DAS=n \
+	CONFIG_SND_SOC_TEGRA20_I2S=n \
+	CONFIG_SND_SOC_TEGRA20_SPDIF=n \
+	CONFIG_SND_SOC_TEGRA30_AHUB=n \
+	CONFIG_SND_SOC_TEGRA30_I2S=n \
+	CONFIG_SND_SOC_TEGRA_ALC5632=n \
+	CONFIG_SND_SOC_TEGRA_MAX98088=n \
+	CONFIG_SND_SOC_TEGRA_MAX98090=n \
+	CONFIG_SND_SOC_TEGRA_RT5631=n \
+	CONFIG_SND_SOC_TEGRA_RT5640=n \
+	CONFIG_SND_SOC_TEGRA_RT5677=n \
+	CONFIG_SND_SOC_TEGRA_SGTL5000=n \
+	CONFIG_SND_SOC_TEGRA_TRIMSLICE=n \
+	CONFIG_SND_SOC_TEGRA_WM8753=n \
+	CONFIG_SND_SOC_TEGRA_WM8903=n \
+	CONFIG_SND_SOC_TEGRA_WM9712=n
+  FILES:= \
+	$(LINUX_DIR)/sound/soc/generic/snd-soc-audio-graph-card.ko \
+	$(LINUX_DIR)/sound/soc/generic/snd-soc-simple-card-utils.ko \
+	$(LINUX_DIR)/sound/pci/hda/snd-hda-tegra.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-admaif.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-adx.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-ahub.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-amx.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-dmic.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-i2s.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-mixer.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-mvc.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-ope.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra210-sfc.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra-audio-graph-card.ko \
+	$(LINUX_DIR)/sound/soc/tegra/snd-soc-tegra-pcm.ko
+  AUTOLOAD:=$(call AutoProbe, \
+	snd-hda-tegra \
+	snd-soc-tegra-audio-graph-card \
+	snd-soc-tegra210-admaif \
+	snd-soc-tegra210-adx \
+	snd-soc-tegra210-ahub \
+	snd-soc-tegra210-amx \
+	snd-soc-tegra210-dmic \
+	snd-soc-tegra210-i2s \
+	snd-soc-tegra210-mixer \
+	snd-soc-tegra210-mvc \
+	snd-soc-tegra210-ope \
+	snd-soc-tegra210-sfc \
+	snd-soc-tegra-pcm)
+  DEPENDS:=@TARGET_tegra_armv8 +kmod-sound-hda-core +kmod-sound-soc-core
+  $(call AddDepends/sound)
+endef
+
+define KernelPackage/sound-soc-tegra210/description
+ Support for Tegra 210 Platform sound
+endef
+
+$(eval $(call KernelPackage,sound-soc-tegra210))
+
+
 define KernelPackage/sound-soc-wm8960
   TITLE:=SoC WM8960 codec support
   KCONFIG:=CONFIG_SND_SOC_WM8960
