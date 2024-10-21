@@ -155,6 +155,15 @@ define Package/brcmfmac-nvram-43455-sdio/install
 endef
 $(eval $(call BuildPackage,brcmfmac-nvram-43455-sdio))
 
+Package/brcmfmac-nvram-4354-sdio = $(call Package/firmware-default,Broadcom BCM4354 SDIO NVRAM,,LICENCE.cypress)
+define Package/brcmfmac-nvram-4354-sdio/install
+	$(INSTALL_DIR) $(1)/lib/firmware/brcm
+	$(INSTALL_DATA) \
+		$(PKG_BUILD_DIR)/brcm/brcmfmac4354-sdio.nvidia,p2371-2180.txt \
+		$(1)/lib/firmware/brcm/
+endef
+$(eval $(call BuildPackage,brcmfmac-nvram-4354-sdio))
+
 Package/brcmfmac-nvram-4356-sdio = $(call Package/firmware-default,Broadcom BCM4356 SDIO NVRAM,,LICENCE.broadcom_bcm43xx)
 define Package/brcmfmac-nvram-4356-sdio/install
 	$(INSTALL_DIR) $(1)/lib/firmware/brcm
