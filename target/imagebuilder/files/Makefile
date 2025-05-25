@@ -53,6 +53,15 @@ image:
 	make image DISABLED_SERVICES="<svc1> [<svc2> [<svc3> ..]]" # Which services in /etc/init.d/ should be disabled
 	make image ADD_LOCAL_KEY=1 # store locally generated signing key in built images
 	make image ROOTFS_PARTSIZE="<size>" # override the default rootfs partition size in MegaBytes
+endef
+$(eval $(call shexport,Helptext))
+
+define HelptextRelease
+	make image REBUILD_DTB=1 # force rebuild of Device Tree Blob
+endef
+$(eval $(call shexport,HelptextRelease))
+
+define HelptextContinued
 
 manifest:
 	List "all" packages which get installed into the image.
@@ -76,10 +85,14 @@ package_depends:
 	make package_depends PACKAGE="<pkg>"
 
 endef
-$(eval $(call shexport,Helptext))
+$(eval $(call shexport,HelptextContinued))
 
 help: FORCE
 	echo "$$$(call shvar,Helptext)"
+  ifneq ($(VERSION_NUMBER),SNAPSHOT)
+	echo "$$$(call shvar,HelptextRelease)"
+  endif
+	echo "$$$(call shvar,HelptextContinued)"
 
 
 # override variables from rules.mk
@@ -261,10 +274,12 @@ build_image: FORCE
 	@echo Building images...
 	rm -rf $(BUILD_DIR)/json_info_files/
 	if [ -d "target/linux/feeds/$(BOARD)" ]; then \
-		$(NO_TRACE_MAKE) -C target/linux/feeds/$(BOARD)/image install TARGET_BUILD=1 IB=1 EXTRA_IMAGE_NAME="$(EXTRA_IMAGE_NAME)" \
+		$(NO_TRACE_MAKE) -C target/linux/feeds/$(BOARD)/image install TARGET_BUILD=1 EXTRA_IMAGE_NAME="$(EXTRA_IMAGE_NAME)" \
+			$(if $(REBUILD_DTB),IB=REBUILD_DTB,IB=1) \
 			$(if $(USER_PROFILE),PROFILE="$(USER_PROFILE)"); \
 	else \
-		$(NO_TRACE_MAKE) -C target/linux/$(BOARD)/image install TARGET_BUILD=1 IB=1 EXTRA_IMAGE_NAME="$(EXTRA_IMAGE_NAME)" \
+		$(NO_TRACE_MAKE) -C target/linux/$(BOARD)/image install TARGET_BUILD=1 EXTRA_IMAGE_NAME="$(EXTRA_IMAGE_NAME)" \
+			$(if $(REBUILD_DTB),IB=REBUILD_DTB,IB=1) \
 			$(if $(USER_PROFILE),PROFILE="$(USER_PROFILE)"); \
 	fi
 
@@ -326,9 +341,39 @@ else
 endif
 endif
 
+ifneq ($(VERSION_NUMBER),SNAPSHOT)
+HOST_OS:=$(shell uname)
+HOST_ARCH:=$(shell uname -m)
+TARGET_URL:=$(VERSION_REPO)/targets/$(BOARD)/$(SUBTARGET)
+TOOLCHAIN_NAME:=$(VERSION_DIST_SANITIZED)-toolchain-$(if $(CONFIG_VERSION_FILENAMES),$(VERSION_NUMBER)-)$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))_gcc-$(GCCV)$(DIR_SUFFIX).$(HOST_OS)-$(HOST_ARCH)
+TOOLCHAIN_HASH:=$(shell wget -q -O- $(TARGET_URL)/sha256sums | awk '/$(TOOLCHAIN_NAME)/ {printf $$1}')
+
+_get_toolchain: FORCE
+  ifeq ($(TOOLCHAIN_HASH),)
+	@echo "Cant't obtain checksum for toolchain archive from $(TARGET_URL)/sha256sums"
+	@exit 1
+  else
+	mkdir -p $(DL_DIR)
+	DOWNLOAD_CHECK_CERTIFICATE=1 $(SCRIPT_DIR)/download.pl \
+		$(DL_DIR) \
+		$(TOOLCHAIN_NAME).tar.zst \
+		$(TOOLCHAIN_HASH) \
+		$(TARGET_URL)
+	$(TAR) -x --strip-components=1 \
+		-f $(DL_DIR)/$(TOOLCHAIN_NAME).tar.zst \
+		-C $(TOPDIR)/staging_dir \
+		$(TOOLCHAIN_NAME)/$(TOOLCHAIN_DIR_NAME)
+  endif
+endif
+
 image:
 	$(MAKE) -s _check_profile
 	$(MAKE) -s _check_keys
+  ifneq ($(VERSION_NUMBER),SNAPSHOT)
+    ifeq ($(REBUILD_DTB),1)
+	$(MAKE) -s _get_toolchain
+    endif
+  endif
 	(unset PROFILE FILES PACKAGES MAKEFLAGS; \
 	$(MAKE) -s _call_image \
 		$(if $(PROFILE),USER_PROFILE="$(PROFILE_FILTER)") \

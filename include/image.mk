@@ -712,10 +712,7 @@ define Device/Build/kernel
   $(call Device/Export,$$(KDIR_KERNEL_IMAGE),$(1))
   $(BIN_DIR)/$$(KERNEL_IMAGE): $$(KDIR_KERNEL_IMAGE)
 	cp $$^ $$@
-  ifndef IB
-    ifdef CONFIG_IB
-      install: $$(KDIR_KERNEL_IMAGE)
-    endif
+  ifneq ($(IB),1)
     $$(KDIR_KERNEL_IMAGE): $(KDIR)/$$(KERNEL_NAME) $(CURDIR)/Makefile $$(KERNEL_DEPENDS) image_prepare
 	@rm -f $$@
 	$$(call concat_cmd,$$(KERNEL))
@@ -943,7 +940,7 @@ define BuildImage
   clean:
   image_prepare:
 
-  ifeq ($(IB),)
+  ifneq ($(IB),1)
     .PHONY: download prepare compile compile-dtb clean image_prepare kernel_prepare install install-images
     compile:
 		$(call Build/Compile)
