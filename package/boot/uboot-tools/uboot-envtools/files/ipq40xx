@@ -47,11 +47,12 @@ plasmacloud,pa1200|\
 plasmacloud,pa2200)
 	ubootenv_add_uci_config "/dev/mtd5" "0x0" "0x10000" "0x10000"
 	;;
-aruba,ap-303)
-	ubootenv_add_uci_config "/dev/mtd13" "0x0" "0x10000" "0x10000"
-	;;
+arista,w-118|\
 aruba,ap-365)
 	ubootenv_add_uci_config "/dev/mtd8" "0x0" "0x10000" "0x10000"
+	;;
+aruba,ap-303)
+	ubootenv_add_uci_config "/dev/mtd13" "0x0" "0x10000" "0x10000"
 	;;
 buffalo,wtr-m2133hp|\
 netgear,lbr20)

@@ -170,6 +170,20 @@ define Device/alfa-network_ap120c-ac
 endef
 TARGET_DEVICES += alfa-network_ap120c-ac
 
+define Device/arista_w-118
+	$(call Device/FitzImage)
+	DEVICE_VENDOR := Arista Networks
+	DEVICE_MODEL := W-118
+	DEVICE_ALT0_VENDOR := WatchGuard
+	DEVICE_ALT0_MODEL := AP225W
+	DEVICE_PACKAGES := ath10k-firmware-qca988x-ct
+	SOC := qcom-ipq4019
+	BLOCKSIZE := 64k
+	IMAGE_SIZE := 31232k
+	IMAGE/sysupgrade.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | pad-rootfs | append-metadata
+endef
+TARGET_DEVICES += arista_w-118
+
 define Device/aruba_glenmorangie
 	$(call Device/FitImageLzma)
 	DEVICE_VENDOR := Aruba

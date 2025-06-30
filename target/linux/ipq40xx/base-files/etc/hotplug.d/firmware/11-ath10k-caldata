@@ -9,6 +9,9 @@ board=$(board_name)
 case "$FIRMWARE" in
 "ath10k/cal-pci-0000:01:00.0.bin")
 	case "$board" in
+	arista,w-118)
+		caldata_extract "0:ART" 0x9000 0x844
+		;;
 	meraki,mr33 |\
 	meraki,mr74)
 		caldata_extract_ubi "ART" 0x9000 0x844
