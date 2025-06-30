@@ -55,6 +55,15 @@ ipq40xx_setup_interfaces()
 	zte,mf289f)
 		ucidef_set_interfaces_lan_wan "lan" "wan"
 		;;
+	arista,w-118|\
+	aruba,ap-303h|\
+	buffalo,wtr-m2133hp|\
+	ezviz,cs-w3-wd1200g-eup|\
+	netgear,rbr40|\
+	netgear,rbr50|\
+	netgear,srr60)
+		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3" "wan"
+		;;
 	aruba,ap-303|\
 	aruba,ap-365|\
 	avm,fritzrepeater-1200|\
@@ -72,14 +81,6 @@ ipq40xx_setup_interfaces()
 	netgear,ex6150v2|\
 	zte,mf282plus)
 		ucidef_set_interface_lan "lan"
-		;;
-	aruba,ap-303h|\
-	buffalo,wtr-m2133hp|\
-	ezviz,cs-w3-wd1200g-eup|\
-	netgear,rbr40|\
-	netgear,rbr50|\
-	netgear,srr60)
-		ucidef_set_interfaces_lan_wan "lan1 lan2 lan3" "wan"
 		;;
 	avm,fritzbox-7530|\
 	netgear,rbs40|\
