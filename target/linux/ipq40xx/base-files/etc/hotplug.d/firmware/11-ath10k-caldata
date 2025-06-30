@@ -7,6 +7,13 @@
 board=$(board_name)
 
 case "$FIRMWARE" in
+"ath10k/cal-pci-0000:01:00.0.bin")
+	case "$board" in
+	arista,w-118)
+		caldata_extract "0:ART" 0x9000 0x844
+		;;
+	esac
+	;;
 "ath10k/pre-cal-pci-0000:01:00.0.bin")
 	case "$board" in
 	avm,fritzrepeater-3000)
