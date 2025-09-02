@@ -347,6 +347,24 @@ define Device/meraki_mr52
 endef
 TARGET_DEVICES += meraki_mr52
 
+define Device/mojo_c-130
+	$(call Device/FitImage)
+	DEVICE_VENDOR := Mojo Networks
+	DEVICE_MODEL := C-130
+	DEVICE_ALT0_VENDOR := Arista Networks
+	DEVICE_ALT0_MODEL := C-130
+	DEVICE_ALT1_VENDOR := WatchGuard
+	DEVICE_ALT1_MODEL := AP420
+	DEVICE_DTS_CONFIG := config@2
+	DEVICE_PACKAGES := ath10k-firmware-qca988x-ct ath10k-firmware-qca9984-ct \
+		kmod-regulator-userspace-consumer
+	SOC := qcom-ipq8068
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	IMAGE_SIZE := 65536k
+endef
+TARGET_DEVICES += mojo_c-130
+
 define Device/nec_wg2600hp
 	$(call Device/LegacyImage)
 	$(Device/dsa-migration)

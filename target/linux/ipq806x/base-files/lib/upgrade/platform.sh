@@ -15,6 +15,7 @@ platform_do_upgrade() {
 	compex,wpq864|\
 	fortinet,fap-421e|\
 	linksys,e8350-v1|\
+	mojo,c-130|\
 	netgear,d7800|\
 	netgear,r7500|\
 	netgear,r7500v2|\

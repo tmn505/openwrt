@@ -16,7 +16,8 @@ ipq806x_setup_interfaces()
 		;;
 	aruba,ap-32x|\
 	edgecore,ecw5410|\
-	extreme,ap3935)
+	extreme,ap3935|\
+	mojo,c-130)
 		ucidef_set_interfaces_lan_wan "eth1" "eth0"
 		;;
 	askey,rt4230w-rev6|\

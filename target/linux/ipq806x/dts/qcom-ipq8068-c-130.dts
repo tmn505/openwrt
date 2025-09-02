@@ -1,0 +1,313 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/soc/qcom,tcsr.h>
+
+#include "qcom-ipq8064-v2.0-smb208.dtsi"
+
+/ {
+	model = "Mojo C-130";
+	compatible = "mojo,c-130", "qcom,ipq8064";
+
+	aliases {
+		label-mac-device = &gmac2;
+		led-boot = &led_power;
+		led-failsafe = &led_power;
+//		led-running = &led_power;
+		led-upgrade = &led_power;
+	};
+
+	chosen {
+		bootargs-override = "console=ttyMSM0,115200n8 root=/dev/ubiblock0_1";
+	};
+
+	cpus {
+		idle-states {
+			CPU_SPC: spc {
+				status = "disabled";
+			};
+		};
+	};
+
+	keys {
+		compatible = "gpio-keys";
+		pinctrl-0 = <&buttons_pins>;
+		pinctrl-names = "default";
+
+		button-reset {
+			label = "reset";
+			gpios = <&qcom_pinmux 26 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+			debounce-interval = <60>;
+			wakeup-source;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-0 = <&leds_pins>;
+		pinctrl-names = "default";
+
+		led_power: led-power {
+			color = <LED_COLOR_ID_AMBER>;
+			function = LED_FUNCTION_POWER;
+			gpios = <&qcom_pinmux 31 GPIO_ACTIVE_HIGH>;
+			panic-indicator;
+		};
+	};
+
+	reg_usb_vbus: regulator-usb-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpios = <&qcom_pinmux 67 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		pinctrl-0 = <&regulator_pins>;
+		pinctrl-names = "default";
+	};
+
+	output-usb-vbus {
+		compatible = "regulator-output";
+		vout-supply = <&reg_usb_vbus>;
+	};
+
+	reserved-memory {
+		nss@40000000 {
+			reg = <0x40000000 0x1000000>;
+			no-map;
+		};
+
+		smem: smem@41000000 {
+			reg = <0x41000000 0x200000>;
+			no-map;
+		};
+
+		wifi_dump@44000000 {
+			reg = <0x44000000 0x600000>;
+			no-map;
+		};
+	};
+};
+
+&adm_dma {
+	status = "okay";
+};
+
+&gmac2 {
+	status = "okay";
+
+	qcom,id = <2>;
+	mdiobus = <&mdio0>;
+	phy-mode = "sgmii";
+	phy-handle = <&ethphy0>;
+	nvmem-cell-names = "mac-address";
+	nvmem-cells = <&macaddr_art_0>;
+};
+
+&gmac3 {
+	status = "okay";
+
+	qcom,id = <3>;
+	mdiobus = <&mdio0>;
+	phy-mode = "sgmii";
+	phy-handle = <&ethphy1>;
+	nvmem-cell-names = "mac-address";
+	nvmem-cells = <&macaddr_art_6>;
+};
+
+&gsbi5 {
+	status = "okay";
+
+	qcom,mode = <GSBI_PROT_SPI>;
+
+	spi@1a280000 {
+		status = "okay";
+
+		spi-max-frequency = <50000000>;
+		cs-gpios = <&qcom_pinmux 20 GPIO_ACTIVE_HIGH>;
+		pinctrl-0 = <&spi_pins &spi_cs_pins>;
+		pinctrl-names = "default";
+
+		flash@0 {
+			compatible = "jedec,spi-nor";
+			reg = <0>;
+			spi-max-frequency = <50000000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partitions {
+				compatible = "qcom,smem-part";
+
+				partition-0-appsblenv {
+					label = "0:appsblenv";
+
+					nvmem-layout {
+						compatible = "u-boot,env";
+					};
+				};
+
+				partition-0-art {
+					label = "0:art";
+
+					nvmem-layout {
+						compatible = "fixed-layout";
+						#address-cells = <1>;
+						#size-cells = <1>;
+
+						macaddr_art_0: macaddr@0 {
+							reg = <0x0 0x6>;
+						};
+
+						macaddr_art_6: macaddr@6 {
+							reg = <0x6 0x6>;
+						};
+
+						model@40 {
+							reg = <0x40 0x5>;
+						};
+
+						serial-number@30 {
+							reg = <0x50 0xd>;
+						};
+
+						precal_art_1000: precal@1000 {
+							reg = <0x1000 0x2f20>;
+						};
+
+						precal_art_5000: precal@5000 {
+							reg = <0x5000 0x2f20>;
+						};
+					};
+				};
+			};
+		};
+	};
+};
+
+&hs_phy_0 {
+	status = "okay";
+};
+
+&mdio0 {
+	status = "okay";
+
+	pinctrl-0 = <&mdio0_pins>;
+	pinctrl-names = "default";
+
+	ethphy0: ethernet-phy@2 {
+		reg = <2>;
+	};
+
+	ethphy1: ethernet-phy@3 {
+		reg = <3>;
+	};
+};
+
+&nand {
+	status = "okay";
+
+	nand@0 {
+		compatible = "qcom,nandcs";
+		reg = <0>;
+		nand-bus-width = <8>;
+		nand-ecc-strength = <4>;
+		nand-ecc-step-size = <512>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "ubi";
+				reg = <0x0000000 0x4000000>;
+			};
+
+			partition@4000000 {
+				label = "rootfs2";
+				reg = <0x4000000 0x2000000>;
+			};
+
+			partition@6000000 {
+				label = "opt2";
+				reg = <0x6000000 0x2000000>;
+			};
+		};
+	};
+};
+
+&pcie0 {
+	status = "okay";
+
+	pcie@0 {
+		wifi@1,0 {
+			compatible = "qcom,ath10k";
+			reg = <0x00010000 0 0 0 0>;
+			nvmem-cells = <&precal_art_1000>;
+			nvmem-cell-names = "pre-calibration";
+			qcom,ath10k-calibration-variant = "Mojo-C-130";
+		};
+	};
+};
+
+&pcie1 {
+	status = "okay";
+
+	pcie@0 {
+		wifi@1,0 {
+			compatible = "qcom,ath10k";
+			status = "okay";
+			reg = <0x00010000 0 0 0 0>;
+			nvmem-cells = <&precal_art_5000>;
+			nvmem-cell-names = "pre-calibration";
+			qcom,ath10k-calibration-variant = "Mojo-C-130";
+		};
+	};
+};
+
+&pcie2 {
+	status = "okay";
+
+	pcie@0 {
+		wifi@1,0 {
+			compatible = "qcom,ath10k";
+			reg = <0x00010000 0 0 0 0>;
+		};
+	};
+};
+
+&qcom_pinmux {
+	spi_cs_pins: spi-cs-pins {
+		pins = "gpio20";
+		function = "gpio";
+		drive-strength = <10>;
+		bias-pull-up;
+	};
+
+	buttons_pins: buttons-state {
+		pins = "gpio26";
+		function = "gpio";
+	};
+
+	leds_pins: leds-state {
+		pins = "gpio31";
+		function = "gpio";
+		drive-strength = <12>;
+		bias-pull-up;
+	};
+
+	regulator_pins: regulator-pins {
+		pins = "gpio67";
+		function = "gpio";
+	};
+};
+
+&ss_phy_0 {
+	status = "okay";
+};
+
+&usb3_0 {
+	status = "okay";
+};

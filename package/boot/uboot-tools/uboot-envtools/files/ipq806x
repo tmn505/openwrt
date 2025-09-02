@@ -52,6 +52,9 @@ linksys,ea7500-v1|\
 linksys,ea8500)
 	ubootenv_add_uci_config "/dev/mtd10" "0x0" "0x20000" "0x20000"
 	;;
+mojo,c-130)
+	ubootenv_add_mtd "0:appsblenv" "0x0" "0x40000" "0x10000"
+	;;
 netgear,r7800)
 	ubootenv_add_uci_config "/dev/mtd2" "0x0" "0x040000" "0x20000"
 	;;
