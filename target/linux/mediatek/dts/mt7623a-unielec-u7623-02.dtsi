@@ -69,7 +69,7 @@
 		regulator-always-on;
 	};
 
-	gpio-keys {
+	keys {
 		compatible = "gpio-keys";
 		pinctrl-names = "default";
 		pinctrl-0 = <&key_pins_a>;
@@ -120,8 +120,7 @@
 &pio {
 	key_pins_a: keys-alt {
 		pins-keys {
-			pinmux = <MT7623_PIN_256_GPIO256_FUNC_GPIO256>,
-				 <MT7623_PIN_257_GPIO257_FUNC_GPIO257>;
+			pinmux = <MT7623_PIN_256_GPIO256_FUNC_GPIO256>;
 			input-enable;
 		};
 	};
@@ -132,68 +131,6 @@
 				 <MT7623_PIN_15_GPIO15_FUNC_GPIO15>;
 		};
 	};
-
-	mmc0_pins_default: mmc0default {
-		pins_cmd_dat {
-			pinmux = <MT7623_PIN_111_MSDC0_DAT7_FUNC_MSDC0_DAT7>,
-				 <MT7623_PIN_112_MSDC0_DAT6_FUNC_MSDC0_DAT6>,
-				 <MT7623_PIN_113_MSDC0_DAT5_FUNC_MSDC0_DAT5>,
-				 <MT7623_PIN_114_MSDC0_DAT4_FUNC_MSDC0_DAT4>,
-				 <MT7623_PIN_118_MSDC0_DAT3_FUNC_MSDC0_DAT3>,
-				 <MT7623_PIN_119_MSDC0_DAT2_FUNC_MSDC0_DAT2>,
-				 <MT7623_PIN_120_MSDC0_DAT1_FUNC_MSDC0_DAT1>,
-				 <MT7623_PIN_121_MSDC0_DAT0_FUNC_MSDC0_DAT0>,
-				 <MT7623_PIN_116_MSDC0_CMD_FUNC_MSDC0_CMD>;
-			input-enable;
-			bias-pull-up;
-		};
-
-		pins_clk {
-			pinmux = <MT7623_PIN_117_MSDC0_CLK_FUNC_MSDC0_CLK>;
-			bias-pull-down;
-		};
-
-		pins_rst {
-			pinmux = <MT7623_PIN_115_MSDC0_RSTB_FUNC_MSDC0_RSTB>;
-			bias-pull-up;
-		};
-	};
-
-	mmc0_pins_uhs: mmc0 {
-		pins_cmd_dat {
-			pinmux = <MT7623_PIN_111_MSDC0_DAT7_FUNC_MSDC0_DAT7>,
-				 <MT7623_PIN_112_MSDC0_DAT6_FUNC_MSDC0_DAT6>,
-				 <MT7623_PIN_113_MSDC0_DAT5_FUNC_MSDC0_DAT5>,
-				 <MT7623_PIN_114_MSDC0_DAT4_FUNC_MSDC0_DAT4>,
-				 <MT7623_PIN_118_MSDC0_DAT3_FUNC_MSDC0_DAT3>,
-				 <MT7623_PIN_119_MSDC0_DAT2_FUNC_MSDC0_DAT2>,
-				 <MT7623_PIN_120_MSDC0_DAT1_FUNC_MSDC0_DAT1>,
-				 <MT7623_PIN_121_MSDC0_DAT0_FUNC_MSDC0_DAT0>,
-				 <MT7623_PIN_116_MSDC0_CMD_FUNC_MSDC0_CMD>;
-			input-enable;
-			drive-strength = <MTK_DRIVE_2mA>;
-			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
-		};
-
-		pins_clk {
-			pinmux = <MT7623_PIN_117_MSDC0_CLK_FUNC_MSDC0_CLK>;
-			drive-strength = <MTK_DRIVE_2mA>;
-			bias-pull-down = <MTK_PUPD_SET_R1R0_01>;
-		};
-
-		pins_rst {
-			pinmux = <MT7623_PIN_115_MSDC0_RSTB_FUNC_MSDC0_RSTB>;
-			bias-pull-up;
-		};
-	};
-
-	pcie_default: pcie_pin_default {
-		pins_cmd_dat {
-			pinmux = <MT7623_PIN_208_AUD_EXT_CK1_FUNC_PCIE0_PERST_N>,
-				 <MT7623_PIN_209_AUD_EXT_CK2_FUNC_PCIE1_PERST_N>;
-			bias-disable;
-		};
-	};
 };
 
 &pwm {
@@ -202,18 +139,12 @@
 	status = "okay";
 };
 
-&pwrap {
-	mt6323 {
-		mt6323led: led {
-			compatible = "mediatek,mt6323-led";
-			#address-cells = <1>;
-			#size-cells = <0>;
+&mt6323_leds {
+	status = "okay";
 
-			led@0 {
-				reg = <0>;
-				label = "led0";
-			};
-		};
+	led@0 {
+		reg = <0>;
+		label = "led0";
 	};
 };
 
