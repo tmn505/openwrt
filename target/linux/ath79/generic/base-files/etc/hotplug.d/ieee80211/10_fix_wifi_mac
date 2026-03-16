@@ -93,6 +93,15 @@ case "$board" in
 		[ "$PHYNBR" -eq 1 ] && \
 			mtd_get_mac_ascii devdata wlan24mac > /sys${DEVPATH}/macaddress
 		;;
+	engenius,epg5000|\
+	engenius,esr1200|\
+	engenius,esr1750|\
+	engenius,esr900)
+		[ "$PHYNBR" -eq 0 ] && \
+			macaddr_add "$(mtd_get_mac_ascii u-boot-env ethaddr)" 1 > /sys${DEVPATH}/macaddress
+		[ "$PHYNBR" -eq 1 ] && \
+			macaddr_add "$(mtd_get_mac_ascii u-boot-env ethaddr)" 0 > /sys${DEVPATH}/macaddress
+		;;
 	phicomm,k2t)
 		[ "$PHYNBR" -eq 0 ] && \
 			k2t_get_mac "5g_mac" > /sys${DEVPATH}/macaddress

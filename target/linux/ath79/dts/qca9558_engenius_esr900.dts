@@ -74,8 +74,8 @@
 };
 
 &wmac {
-	nvmem-cells = <&calibration_art_1000>, <&macaddr_uboot_eth 0>;
-	nvmem-cell-names = "calibration", "mac-address";
+	nvmem-cells = <&calibration_art_1000>;
+	nvmem-cell-names = "calibration";
 
 	led {
 		led-sources = <13>;
@@ -86,6 +86,6 @@
 &wifi0 {
 	compatible = "pci168c,0033";
 
-	nvmem-cells = <&calibration_art_5000>, <&macaddr_uboot_eth 1>;
-	nvmem-cell-names = "calibration", "mac-address";
+	nvmem-cells = <&calibration_art_5000>;
+	nvmem-cell-names = "calibration";
 };
