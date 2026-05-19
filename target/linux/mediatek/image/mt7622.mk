@@ -52,6 +52,20 @@ define Build/mt7622-gpt
 	rm $@.tmp
 endef
 
+define Device/adtran_sdg-854-6
+  DEVICE_VENDOR := Adtran
+  DEVICE_MODEL := SDG-854-6
+  DEVICE_ALT0_VENDOR := Adtran
+  DEVICE_ALT0_MODEL := SDG-854-v6
+  DEVICE_DTS := mt7622-adtran-sdg-854-6-extphy mt7622-adtran-sdg-854-6-sfp
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_PACKAGES += e2fsprogs f2fsck mkf2fs kmod-mt7915e kmod-mt7915-firmware kmod-sfp kmod-usb3
+  BOOT_SCRIPT := bootscript-$$(DEVICE_NAME).txt
+  KERNEL_SIZE := 19711k
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+TARGET_DEVICES += adtran_sdg-854-6
+
 define Device/asiarf_ap7622-wh1
   DEVICE_VENDOR := AsiaRF
   DEVICE_MODEL := AP7622-WH1

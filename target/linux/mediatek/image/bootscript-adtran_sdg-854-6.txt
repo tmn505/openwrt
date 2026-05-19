@@ -1,0 +1,21 @@
+# SFP pull-ups
+mw.l 0x10211930 0x00300000 1
+# Toggle AUXINx pins to GPIO
+mw.l 0x10211cf0 0x000000ff 1
+
+# Detect if SFP cage is occupied by checking GPIO87_DIN
+setexpr.l gpio87_din 0x800000 \& *0x10211220
+
+echo
+if test ${gpio87_din} -eq 0; then
+	setenv fit_config mt7622-adtran-sdg-854-6-sfp
+	echo "SFP cage status: occupied"
+elif test -n ${sfp} && test ${sfp} = force; then
+	setenv fit_config mt7622-adtran-sdg-854-6-sfp
+	echo "SFP cage status: occupied (forced)"
+else
+	setenv fit_config config-1
+	echo "SFP cage status: empty"
+fi
+
+bootm ${loadaddr}#${fit_config}

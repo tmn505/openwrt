@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0-only or MIT
+
+/dts-v1/;
+
+#include "mt7622-adtran-sdg-854.dtsi"
+
+&led_wan {
+	linux,default-trigger = "mt7530-0:05:link";
+};
+
+&mux_sel {
+	output-high;
+};
+
+&phy5 {
+	compatible = "ethernet-phy-ieee802.3-c45";
+	mxl,soft-reset;
+};
+
+&port5 {
+	phy-handle = <&phy5>;
+};
