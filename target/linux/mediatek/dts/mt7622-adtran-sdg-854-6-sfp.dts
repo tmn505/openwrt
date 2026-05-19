@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0-only or MIT
+
+/dts-v1/;
+
+#include "mt7622-adtran-sdg-854.dtsi"
+
+/ {
+	sfp: sfp {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c0>;
+		los-gpio = <&pio 22 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&pio 77 GPIO_ACTIVE_LOW>;
+		rate-select0-gpios = <&pio 21 GPIO_ACTIVE_HIGH>;
+		tx-disable-gpios = <&pio 20 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&pio 87 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&led_sfp {
+	default-state = "on";
+};
+
+&mux_sel {
+	output-low;
+};
+
+&port5 {
+	sfp = <&sfp>;
+	managed = "in-band-status";
+};

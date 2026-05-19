@@ -6,6 +6,12 @@ platform_do_upgrade() {
 	local file_type=$(identify $1)
 
 	case "$board" in
+	adtran,sdg-854-6|\
+	smartrg,sdg-841-t6)
+		CI_KERNPART="boot"
+		CI_ROOTPART="res1"
+		emmc_do_upgrade "$1"
+		;;
 	bananapi,bpi-r64|\
 	linksys,e8450-ubi|\
 	ubnt,unifi-6-lr-v1-ubootmod|\
@@ -36,11 +42,6 @@ platform_do_upgrade() {
 		fi
 		default_do_upgrade "$1"
 		;;
-	smartrg,sdg-841-t6)
-		CI_KERNPART="boot"
-		CI_ROOTPART="res1"
-		emmc_do_upgrade "$1"
-		;;
 	*)
 		default_do_upgrade "$1"
 		;;
@@ -56,11 +57,7 @@ platform_check_image() {
 	[ "$#" -gt 1 ] && return 1
 
 	case "$board" in
-	buffalo,wsr-2533dhp2|\
-	buffalo,wsr-2533dhp3|\
-	buffalo,wsr-3200ax4s)
-		buffalo_check_image "$board" "$magic" "$1" || return 1
-		;;
+	adtran,sdg-854-6|\
 	dlink,eagle-pro-ai-m32-a1|\
 	dlink,eagle-pro-ai-r32-a1|\
 	elecom,wrc-g01|\
@@ -71,6 +68,11 @@ platform_check_image() {
 	totolink,a8000ru)
 		nand_do_platform_check "$board" "$1"
 		return $?
+		;;
+	buffalo,wsr-2533dhp2|\
+	buffalo,wsr-2533dhp3|\
+	buffalo,wsr-3200ax4s)
+		buffalo_check_image "$board" "$magic" "$1" || return 1
 		;;
 	*)
 		fit_check_image "$1"
@@ -83,13 +85,14 @@ platform_check_image() {
 
 platform_copy_config() {
 	case "$(board_name)" in
+	adtran,sdg-854-6|\
+	smartrg,sdg-841-t6)
+		emmc_copy_config
+		;;
 	bananapi,bpi-r64)
 		if [ "$CI_METHOD" = "emmc" ]; then
 			emmc_copy_config
 		fi
-		;;
-	smartrg,sdg-841-t6)
-		emmc_copy_config
 		;;
 	esac
 }
