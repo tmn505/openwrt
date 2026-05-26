@@ -99,11 +99,11 @@ define Device/bananapi_bpi-r2
   IMAGES := sysupgrade.itb
   KERNEL := kernel-bin | gzip
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
-  KERNEL_INITRAMFS := kernel-bin | gzip | fit gzip $$(DTS_DIR)/$$(DEVICE_DTS).dtb with-initrd
+  KERNEL_INITRAMFS := kernel-bin | gzip | fit gzip with-initrd
 ifeq ($(DUMP),)
   IMAGE_SIZE := $$(shell expr 48 + $$(CONFIG_TARGET_ROOTFS_PARTSIZE))m
 endif
-  IMAGE/sysupgrade.itb := append-kernel | fit gzip $$(DTS_DIR)/$$(DEVICE_DTS).dtb external-static-with-rootfs | append-metadata
+  IMAGE/sysupgrade.itb := append-kernel | fit gzip external-static-with-rootfs | append-metadata
   ARTIFACT/preloader.bin := mt7623-mbr emmc |\
 			    pad-to 2k | append-preloader $$(UBOOT_TARGET)
   ARTIFACT/u-boot.bin := append-uboot
@@ -144,8 +144,8 @@ endif
   IMAGES := sysupgrade.itb
   KERNEL := kernel-bin | gzip
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
-  KERNEL_INITRAMFS := kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd
-  IMAGE/sysupgrade.itb := append-kernel | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | append-metadata
+  KERNEL_INITRAMFS := kernel-bin | gzip | fit gzip with-initrd
+  IMAGE/sysupgrade.itb := append-kernel | fit gzip external-static-with-rootfs | append-metadata
   ARTIFACT/u-boot.bin := append-uboot
 # vendor Preloader seems not to care about SDMMC_BOOT/EMMC_BOOT header,
 # but OpenWrt expects 'SDMM' magic for sysupgrade.
