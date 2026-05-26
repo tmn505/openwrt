@@ -425,9 +425,8 @@ define Device/meraki_mr32
   KERNEL_INITRAMFS_SUFFIX := .bin
   DEVICE_DTS_DELIMITER := @
   DEVICE_DTS_CONFIG := config@1
-  KERNEL_INITRAMFS := kernel-bin | fit none $$(DTS_DIR)/$$(DEVICE_DTS).dtb | \
-	pad-to 10362880
-  KERNEL := kernel-bin | fit none $$(DTS_DIR)/$$(DEVICE_DTS).dtb
+  KERNEL_INITRAMFS := kernel-bin | fit none | pad-to 10362880
+  KERNEL := kernel-bin | fit none
   IMAGES += sysupgrade.bin
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 
@@ -444,8 +443,8 @@ define Device/meraki_mx6x
   DEVICE_PACKAGES := -oseama kmod-leds-pwm kmod-usb-ehci \
 	kmod-usb-ohci kmod-usb2
   DEVICE_VENDOR := Cisco Meraki
-  KERNEL = kernel-bin | libdeflate-gzip | fit gzip $$(DTS_DIR)/$$(DEVICE_DTS).dtb
-  KERNEL_INITRAMFS := kernel-bin | libdeflate-gzip | fit gzip $$(DTS_DIR)/$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | libdeflate-gzip | fit gzip
+  KERNEL_INITRAMFS := kernel-bin | libdeflate-gzip | fit gzip
   KERNEL_INITRAMFS_SUFFIX := .bin
   IMAGES := sysupgrade.bin
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata

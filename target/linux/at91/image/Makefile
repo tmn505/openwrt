@@ -55,13 +55,13 @@ define Device/evaluation-dtb
   $(Device/evaluation)
   $(Device/dtb)
   KERNEL_SUFFIX := -fit-zImage.itb
-  KERNEL = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | gzip | fit gzip
 endef
 
 define Device/evaluation-fit
   $(Device/evaluation)
   KERNEL_SUFFIX := -fit-uImage.itb
-  KERNEL = kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | lzma | fit lzma
 endef
 
 define Device/production

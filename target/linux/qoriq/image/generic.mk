@@ -6,7 +6,7 @@ define Device/fsl_T4240RDB
     kmod-eeprom-at24 kmod-gpio-button-hotplug kmod-hwmon-w83793 kmod-leds-gpio \
 	  kmod-ptp-qoriq kmod-rtc-ds1374
   FILESYSTEMS := squashfs
-  KERNEL := kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | gzip | fit gzip
   IMAGES := factory-nor.bin.gz sdcard.img.gz rcw.bin sysupgrade.bin
   IMAGE/factory-nor.bin.gz := \
     append-kernel | append-rootfs | pad-rootfs | pad-to 126M | \
@@ -38,7 +38,7 @@ define Device/watchguard_firebox-m300
   DEVICE_PACKAGES := \
 	kmod-gpio-button-hotplug kmod-hwmon-w83793 kmod-leds-gpio kmod-ptp-qoriq \
 	kmod-rtc-rs5c372a kmod-tpm-i2c-atmel kmod-dsa-mv88e6xxx
-  KERNEL := kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | gzip | fit gzip
   KERNEL_SUFFIX := -fit-uImage.itb
   IMAGES := sdcard.img.gz sysupgrade.img.gz
   IMAGE/sysupgrade.img.gz :=  sdcard-img | gzip | append-metadata
