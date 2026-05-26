@@ -9,10 +9,8 @@ loadaddr-$(CONFIG_TARGET_airoha_en7523) := 0x80200000
 define Device/Default
   PROFILES = Default $$(DEVICE_NAME)
   KERNEL_NAME := Image
-  KERNEL = kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
-  KERNEL_INITRAMFS = kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL = kernel-bin | lzma | fit lzma
+  KERNEL_INITRAMFS = kernel-bin | lzma | fit lzma
   KERNEL_LOADADDR = $(loadaddr-y)
   FILESYSTEMS := squashfs
   DEVICE_DTS = $$(SOC)-$(lastword $(subst _, ,$(1)))

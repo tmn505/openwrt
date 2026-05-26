@@ -17,10 +17,8 @@ loadaddr-$(CONFIG_TARGET_mediatek_filogic) := 0x48000000
 define Device/Default
   PROFILES = Default $$(DEVICE_NAME)
   KERNEL_NAME := Image
-  KERNEL = kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
-  KERNEL_INITRAMFS = kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd
+  KERNEL = kernel-bin | lzma | fit lzma
+  KERNEL_INITRAMFS = kernel-bin | lzma | fit lzma with-initrd
   KERNEL_LOADADDR = $(loadaddr-y)
   FILESYSTEMS := squashfs erofs
   DEVICE_DTS_DIR := $(DTS_DIR)
