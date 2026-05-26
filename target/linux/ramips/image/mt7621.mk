@@ -278,7 +278,7 @@ define Device/alfa-network_ax1800rm
   DEVICE_VENDOR := ALFA Network
   DEVICE_MODEL := AX1800RM
   DEVICE_PACKAGES := kmod-mt7915-firmware
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | lzma | fit lzma
   IMAGES += recovery.bin
   IMAGE/recovery.bin := append-kernel | append-rootfs | pad-rootfs | check-size
 endef
@@ -612,7 +612,7 @@ define Device/belkin_rt1800
   DEVICE_PACKAGES := kmod-mt7915-firmware kmod-usb3
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+	fit lzma | \
 	append-squashfs4-fakeroot
   IMAGES += factory.bin
   IMAGE/factory.bin := append-kernel | pad-to $$$$(KERNEL_SIZE) | \
@@ -887,7 +887,7 @@ define Device/dlink_covr-x1860-a1
   UBINIZE_OPTS := -E 5
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+	fit lzma | \
 	append-squashfs4-fakeroot
   IMAGES += factory.bin recovery.bin
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
@@ -926,7 +926,7 @@ define Device/dlink_dap-x1860-a1
   KERNEL_SIZE := 8192k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGES += factory.bin
   IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi | \
 	check-size | elx-header 011b0060 8844A2D168B45A2D
@@ -1155,7 +1155,7 @@ define Device/dlink_dir-x1860-b1
   DEVICE_PACKAGES := kmod-mt7915-firmware
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+	fit lzma | \
 	append-squashfs4-fakeroot
   IMAGES += factory.bin recovery.bin
   IMAGE/recovery.bin := append-kernel | pad-to $$(KERNEL_SIZE) | \
@@ -1277,7 +1277,7 @@ define Device/edup_ep-rt2983
   DEVICE_MODEL := EP-RT2983
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGES += factory.bin
   IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | \
 	append-ubi | check-size
@@ -1327,7 +1327,7 @@ define Device/elecom_wmc-x1800gst
   KERNEL_SIZE := 15360k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
 ifeq ($(IB),)
 ifneq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),)
   ARTIFACTS := initramfs-factory.bin
@@ -1458,10 +1458,10 @@ define Device/elecom_wrc-x1800gs
   DEVICE_MODEL := WRC-X1800GS
   KERNEL_LOADADDR := 0x88000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+	fit lzma | \
 	znet-header 4.04(XVF.1)b90 COMC 0x68 | elecom-product-header WRC-X1800GS
   KERNEL_INITRAMFS := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   KERNEL_SIZE := 8192k
   IMAGE_SIZE := 51456k
 ifeq ($(IB),)
@@ -1483,7 +1483,7 @@ define Device/elecom_wsc-x1800gs
   KERNEL_SIZE := 15360k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
 ifeq ($(IB),)
 ifneq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),)
   ARTIFACTS := initramfs-factory.bin
@@ -1632,7 +1632,7 @@ define Device/h3c_tx180x
   IMAGE_SIZE := 120832k
   KERNEL_LOADADDR := 0x82000000
   KERNEL_INITRAMFS := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   KERNEL := $$(KERNEL_INITRAMFS) | h3c-blank-header
   DEVICE_VENDOR := H3C
   DEVICE_PACKAGES := kmod-mt7915-firmware
@@ -1661,7 +1661,7 @@ define Device/haier-sim_wr1800k
   IMAGE_SIZE := 125440k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
 ifeq ($(IB),)
 ifneq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),)
   ARTIFACTS := initramfs-factory.bin
@@ -1800,7 +1800,7 @@ define Device/iodata_wn-deax1800gr
   UBINIZE_OPTS := -E 5
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 ifeq ($(IB),)
   ARTIFACTS := initramfs-factory.bin
@@ -1934,7 +1934,7 @@ define Device/iptime_ax2002m
   IMAGE_SIZE := 121344k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
 ifeq ($(IB),)
   ARTIFACTS := initramfs-factory.bin
   ARTIFACT/initramfs-factory.bin := append-image-stage initramfs-kernel.bin | \
@@ -1955,7 +1955,7 @@ define Device/iptime_ax2004m
   IMAGE_SIZE := 121344k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
 ifeq ($(IB),)
   ARTIFACTS := initramfs-factory.bin
   ARTIFACT/initramfs-factory.bin := append-image-stage initramfs-kernel.bin | \
@@ -2203,7 +2203,7 @@ define Device/maginon_mc-1200ac
   DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7663-firmware-ap kmod-usb3 -uboot-envtools
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGE/sysupgrade.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | \
 	append-rootfs | pad-rootfs | check-size | append-metadata
   IMAGE_SIZE := 15552k
@@ -2381,7 +2381,7 @@ define Device/netgear_eax12
   IMAGE_SIZE := 57344k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+	fit lzma | \
 	append-squashfs4-fakeroot
   IMAGES += factory.img
   IMAGE/factory.img := append-kernel | pad-to $$(KERNEL_SIZE) | \
@@ -2568,7 +2568,7 @@ define Device/netgear_wax202
   IMAGE_SIZE := 38912k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+	fit lzma | \
 	append-squashfs4-fakeroot
   IMAGES += factory.img
   IMAGE/factory.img := append-kernel | pad-to $$(KERNEL_SIZE) | \
@@ -2586,7 +2586,7 @@ define Device/netgear_wax214v2
   IMAGE_SIZE := 38912k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel 0x80001000 | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+	fit lzma | \
 	append-squashfs4-fakeroot
   IMAGES += factory.img
   IMAGE/factory.img := append-kernel | pad-to $$(KERNEL_SIZE) | \
@@ -2620,7 +2620,7 @@ define Device/netis_n6
   DEVICE_MODEL := N6
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGES += factory.bin
   IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | \
 	append-ubi | check-size | append-netis-n6-metadata
@@ -2698,7 +2698,7 @@ define Device/plasmacloud_pax1800-lite
   DEVICE_PACKAGES := kmod-mt7915-firmware kmod-usb3 kmod-hwmon-lm75
   KERNEL_IN_UBI := 1
   IMAGES += factory.bin
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | pad-to $$(BLOCKSIZE)
+  KERNEL := kernel-bin | lzma | fit lzma | pad-to $$(BLOCKSIZE)
   IMAGE/factory.bin := append-rootfs | pad-to 1k | dualboot-datachk-nand-image ce_type=PAX1800-Lite
   IMAGE/sysupgrade.bin := append-rootfs | pad-to 1k | sysupgrade-tar rootfs=$$$$@ | append-metadata
 endef
@@ -2887,7 +2887,7 @@ define Device/tenbay_t-mb5eu-v01
   DEVICE_MODEL := T-MB5EU-V01
   DEVICE_DTS_CONFIG := config@1
   DEVICE_PACKAGES += kmod-mt7915-firmware kmod-usb3 -uboot-envtools
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | lzma | fit lzma
   IMAGE_SIZE := 15808k
   SUPPORTED_DEVICES += mt7621-dm2-t-mb5eu-v01-nor
 endef
@@ -3071,8 +3071,8 @@ define Device/tplink_eap613-v1
   DEVICE_VARIANT := v1
   DEVICE_PACKAGES := kmod-mt7915-firmware -uboot-envtools
   TPLINK_BOARD_ID := EAP610-V3
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | pad-to 64k
-  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | lzma | fit lzma | pad-to 64k
+  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma
   IMAGE_SIZE := 13248k
 endef
 TARGET_DEVICES += tplink_eap613-v1
@@ -3086,7 +3086,7 @@ define Device/tplink_eap615-wall-v1
   TPLINK_BOARD_ID := EAP615-WALL-V1
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | pad-to 64k
+	fit lzma | pad-to 64k
   IMAGE_SIZE := 13248k
 endef
 TARGET_DEVICES += tplink_eap615-wall-v1
@@ -3127,7 +3127,7 @@ define Device/tplink_er605-v2
   KERNEL_IN_UBI := 1
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGE_SIZE := 127744k
 endef
 TARGET_DEVICES += tplink_er605-v2
@@ -3141,7 +3141,7 @@ define Device/tplink_ex220-v1
   TPLINK_BOARD_ID := EX220-V1
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGE_SIZE := 15744k
 endef
 TARGET_DEVICES += tplink_ex220-v1
@@ -3155,7 +3155,7 @@ define Device/tplink_ex220-v2
   TPLINK_BOARD_ID := EX220-V2
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGE_SIZE := 15744k
 endef
 TARGET_DEVICES += tplink_ex220-v2
@@ -3277,7 +3277,7 @@ define Device/ubnt_unifi-6-lite
   DEVICE_DTS_CONFIG := config@1
   DEVICE_DTS_LOADADDR := 0x87000000
   DEVICE_PACKAGES += kmod-mt7603 kmod-mt7915-firmware -uboot-envtools
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | lzma | fit lzma
   IMAGE_SIZE := 30848k
 endef
 TARGET_DEVICES += ubnt_unifi-6-lite
@@ -3288,7 +3288,7 @@ define Device/ubnt_unifi-flexhd
   DEVICE_MODEL := UniFi FlexHD
   DEVICE_DTS_CONFIG := config@2
   DEVICE_DTS_LOADADDR := 0x87000000
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | lzma | fit lzma
   DEVICE_PACKAGES += kmod-mt7603 kmod-mt7615-firmware kmod-leds-ubnt-ledbar \
 	-uboot-envtools
   IMAGE_SIZE := 15552k
@@ -3311,7 +3311,7 @@ define Device/ubnt_usw-flex
   DEVICE_DTS_CONFIG := config@1
   DEVICE_DTS_LOADADDR := 0x87000000
   DEVICE_PACKAGES += -uboot-envtools
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | lzma | fit lzma
   IMAGE_SIZE := 14720k
 endef
 TARGET_DEVICES += ubnt_usw-flex
@@ -3403,7 +3403,7 @@ define Device/wavlink_ws-wn572hp3-4g
   IMAGE_SIZE := 15040k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   IMAGE/sysupgrade.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | \
 	append-rootfs | pad-rootfs | check-size | append-metadata
   DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7663-firmware-ap \
@@ -3715,7 +3715,7 @@ define Device/z-router_zr-2660
   IMAGE_SIZE := 90112k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   DEVICE_PACKAGES += kmod-mt7915-firmware kmod-usb3 -uboot-envtools
 endef
 TARGET_DEVICES += z-router_zr-2660
@@ -3728,7 +3728,7 @@ define Device/z-router_zr-2662
   IMAGE_SIZE := 121344k
   KERNEL_LOADADDR := 0x82000000
   KERNEL := kernel-bin | relocate-kernel $(loadaddr-y) | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	fit lzma
   DEVICE_PACKAGES += kmod-mt7915-firmware kmod-usb3 -uboot-envtools
 endef
 TARGET_DEVICES += z-router_zr-2662
@@ -3939,7 +3939,7 @@ define Device/zyxel_nwa-ax
   DEVICE_VENDOR := Zyxel
   KERNEL_SIZE := 8192k
   DEVICE_PACKAGES := kmod-mt7915-firmware zyxel-bootconfig
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | lzma | fit lzma
   IMAGES += factory.bin ramboot-factory.bin
   IMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi | zyxel-nwa-fit
   IMAGE/ramboot-factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-ubi
@@ -3977,7 +3977,7 @@ define Device/zyxel_wsm20
   DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := WSM20
   DEVICE_PACKAGES := kmod-mt7915-firmware
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | znet-header V1.00(ABZF.0)C0
-  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | znet-header V1.00(ABZF.0)C0
+  KERNEL := kernel-bin | lzma | fit lzma | znet-header V1.00(ABZF.0)C0
+  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma | znet-header V1.00(ABZF.0)C0
 endef
 TARGET_DEVICES += zyxel_wsm20

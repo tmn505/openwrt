@@ -38,7 +38,7 @@ define Device/OnhubImage
 	SOC := qcom-ipq8064
 	KERNEL_SUFFIX := -fit-zImage.itb.vboot
 	KERNEL_NAME := zImage
-	KERNEL = kernel-bin | fit none $$(KDIR)/image-$$(DEVICE_DTS).dtb | cros-vboot
+	KERNEL = kernel-bin | fit none | cros-vboot
 	IMAGES := factory.bin sysupgrade.bin
 	IMAGE/factory.bin := cros-gpt | append-kernel-part | append-rootfs
 	IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata

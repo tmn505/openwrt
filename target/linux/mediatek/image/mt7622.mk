@@ -116,8 +116,8 @@ ifeq ($(DUMP),)
   IMAGE_SIZE := $$(shell expr 45 + $$(CONFIG_TARGET_ROOTFS_PARTSIZE))m
 endif
   KERNEL			:= kernel-bin | gzip
-  KERNEL_INITRAMFS		:= kernel-bin | lzma | fit lzma $$(DTS_DIR)/$$(DEVICE_DTS).dtb with-initrd | pad-to 128k
-  IMAGE/sysupgrade.itb		:= append-kernel | fit gzip $$(DTS_DIR)/$$(DEVICE_DTS).dtb external-static-with-rootfs | append-metadata
+  KERNEL_INITRAMFS		:= kernel-bin | lzma | fit lzma with-initrd | pad-to 128k
+  IMAGE/sysupgrade.itb		:= append-kernel | fit gzip external-static-with-rootfs | append-metadata
   DEVICE_COMPAT_VERSION := 1.2
   DEVICE_COMPAT_MESSAGE := SPI-NAND flash layout changes require bootloader update
 endef
@@ -135,7 +135,7 @@ define Device/buffalo_wsr
   BUFFALO_TAG_MINOR := 9.99
   IMAGES += factory.bin factory-uboot.bin
   KERNEL_INITRAMFS = kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | \
+	fit lzma with-initrd | \
 	buffalo-trx
   IMAGE/factory.bin = append-ubi | \
 	buffalo-trx $$$$(BUFFALO_TRX_MAGIC) $$$$@ $(KDIR)/ubi_mark | \
@@ -287,10 +287,10 @@ define Device/linksys_e8450-ubi
   KERNEL := kernel-bin | gzip
 # recovery can also be used with stock firmware web-ui, hence the padding...
   KERNEL_INITRAMFS := kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 128k
+	fit lzma with-initrd | pad-to 128k
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
   IMAGES := sysupgrade.itb
-  IMAGE/sysupgrade.itb := append-kernel | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | append-metadata
+  IMAGE/sysupgrade.itb := append-kernel | fit gzip external-static-with-rootfs | append-metadata
   ARTIFACTS := preloader.bin bl31-uboot.fip
   ARTIFACT/preloader.bin := bl2 snand-ubi-1ddr
   ARTIFACT/bl31-uboot.fip := bl31-uboot linksys_e8450
@@ -346,11 +346,11 @@ define Device/netgear_wax206
   PAGESIZE := 2048
   KERNEL_SIZE := 6144k
   IMAGE_SIZE := 32768k
-  KERNEL := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb | \
+  KERNEL := kernel-bin | lzma | fit lzma | \
 	append-squashfs4-fakeroot
 # recovery can also be used with stock firmware web-ui, hence the padding...
   KERNEL_INITRAMFS := kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 128k
+	fit lzma with-initrd | pad-to 128k
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
   IMAGES += factory.img
   IMAGE/factory.img := append-kernel | pad-to $$(KERNEL_SIZE) | \
@@ -408,9 +408,9 @@ define Device/ubnt_unifi-6-lr-v1-ubootmod
   DEVICE_PACKAGES := kmod-mt7915-firmware kmod-leds-ubnt-ledbar
   KERNEL := kernel-bin | lzma
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
-  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma with-initrd | pad-to 64k
   IMAGES := sysupgrade.itb
-  IMAGE/sysupgrade.itb := append-kernel | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | pad-rootfs | append-metadata
+  IMAGE/sysupgrade.itb := append-kernel | fit lzma external-static-with-rootfs | pad-rootfs | append-metadata
   ARTIFACTS := preloader.bin bl31-uboot.fip
   ARTIFACT/preloader.bin := bl2 nor-2ddr
   ARTIFACT/bl31-uboot.fip := bl31-uboot ubnt_unifi-6-lr-v1
@@ -438,9 +438,9 @@ define Device/ubnt_unifi-6-lr-v2-ubootmod
   DEVICE_PACKAGES := kmod-mt7915-firmware
   KERNEL := kernel-bin | lzma
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
-  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma with-initrd | pad-to 64k
   IMAGES := sysupgrade.itb
-  IMAGE/sysupgrade.itb := append-kernel | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | pad-rootfs | append-metadata
+  IMAGE/sysupgrade.itb := append-kernel | fit lzma external-static-with-rootfs | pad-rootfs | append-metadata
   ARTIFACTS := preloader.bin bl31-uboot.fip
   ARTIFACT/preloader.bin := bl2 nor-2ddr
   ARTIFACT/bl31-uboot.fip := bl31-uboot ubnt_unifi-6-lr-v2
@@ -467,9 +467,9 @@ define Device/ubnt_unifi-6-lr-v3-ubootmod
   DEVICE_PACKAGES := kmod-mt7915-firmware
   KERNEL := kernel-bin | lzma
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
-  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma with-initrd | pad-to 64k
   IMAGES := sysupgrade.itb
-  IMAGE/sysupgrade.itb := append-kernel | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | pad-rootfs | append-metadata
+  IMAGE/sysupgrade.itb := append-kernel | fit lzma external-static-with-rootfs | pad-rootfs | append-metadata
   ARTIFACTS := preloader.bin bl31-uboot.fip
   ARTIFACT/preloader.bin := bl2 nor-2ddr
   ARTIFACT/bl31-uboot.fip := bl31-uboot ubnt_unifi-6-lr-v3
@@ -489,10 +489,10 @@ define Device/xiaomi_redmi-router-ax6s
   BLOCKSIZE := 128k
   PAGESIZE := 2048
   KERNEL := kernel-bin | gzip
-  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  KERNEL_INITRAMFS := kernel-bin | lzma | fit lzma with-initrd | pad-to 64k
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
   IMAGES := sysupgrade.itb
-  IMAGE/sysupgrade.itb := append-kernel | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | append-metadata
+  IMAGE/sysupgrade.itb := append-kernel | fit gzip external-static-with-rootfs | append-metadata
   ARTIFACTS := ubi-loader.itb
   ARTIFACT/ubi-loader.itb := uboot-bin xiaomi_redmi-router-ax6s-ubi-loader | lzma | uboot-fit lzma
 ifneq ($(CONFIG_TARGET_ROOTFS_SQUASHFS),)

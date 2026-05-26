@@ -41,7 +41,7 @@ endef
 
 define Device/FitImageLzma
 	KERNEL_SUFFIX := -uImage.itb
-	KERNEL = kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(DEVICE_DTS).dtb
+	KERNEL = kernel-bin | lzma | fit lzma
 	KERNEL_NAME := Image
 endef
 
@@ -111,10 +111,10 @@ define Device/gemtek_w1700k-ubi
   KERNEL_IN_UBI := 1
   KERNEL := kernel-bin | gzip
   KERNEL_INITRAMFS := kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 128k
+	fit lzma with-initrd | pad-to 128k
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
   IMAGES := sysupgrade.itb
-  IMAGE/sysupgrade.itb := append-kernel | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | append-metadata
+  IMAGE/sysupgrade.itb := append-kernel | fit gzip external-static-with-rootfs | append-metadata
   ARTIFACTS := chainload-uboot.itb
   ARTIFACT/chainload-uboot.itb := an7581-chainloader gemtek_w1700k
   SOC := an7581
@@ -169,12 +169,11 @@ define Device/nokia_xg-040g-md-ubi
   KERNEL_IN_UBI := 1
   KERNEL := kernel-bin | gzip
   KERNEL_INITRAMFS := kernel-bin | lzma | \
-	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 128k
+	fit lzma with-initrd | pad-to 128k
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
   IMAGES := sysupgrade.itb
   IMAGE/sysupgrade.itb := append-kernel | \
-	fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb external-static-with-rootfs | \
-	append-metadata
+	fit gzip external-static-with-rootfs append-metadata
   DEVICE_PACKAGES += fitblk
   ARTIFACT/bl31-uboot.fip := an7581-bl31-uboot nokia_xg-040g-md
   ARTIFACT/preloader.bin := an7581-preloader nokia_xg-040g-md

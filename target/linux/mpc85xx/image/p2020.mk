@@ -7,8 +7,7 @@ define Device/freescale_p2020rdb
   DEVICE_PACKAGES := kmod-dsa-vsc73xx-platform kmod-gpio-pca953x \
 	  kmod-hwmon-lm90 kmod-rtc-ds1307
   BLOCKSIZE := 128k
-  KERNEL := kernel-bin | libdeflate-gzip | \
-	fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL := kernel-bin | libdeflate-gzip | fit gzip
   SUPPORTED_DEVICES := fsl,P2020RDB
   IMAGES := sysupgrade.bin
   IMAGE/sysupgrade.bin := append-kernel | append-rootfs | \
@@ -23,7 +22,7 @@ define Device/watchguard_xtm330
   DEVICE_PACKAGES := kmod-dsa-mv88e6xxx kmod-hwmon-w83793 \
     kmod-rtc-rs5c372a
   BLOCKSIZE := 128k
-  KERNEL = kernel-bin | fit none $(KDIR)/image-$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | fit none
   KERNEL_NAME := zImage.la3000000
   KERNEL_ENTRY := 0x3000000
   KERNEL_LOADADDR := 0x3000000

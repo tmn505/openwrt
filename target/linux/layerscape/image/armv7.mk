@@ -8,7 +8,7 @@ define Device/Default
   IMAGES := firmware.bin sysupgrade.bin
   DEVICE_DTS_DIR := $(DTS_DIR)/nxp/ls
   KERNEL := kernel-bin | uImage none
-  KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip $$(DEVICE_DTS_DIR)/$$(DEVICE_DTS).dtb
+  KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip
   KERNEL_NAME := zImage
   KERNEL_LOADADDR := 0x80008000
   DEVICE_DTS = $(lastword $(subst _, ,$(1)))
@@ -21,7 +21,7 @@ define Device/Default
 endef
 
 define Device/fsl-sdboot
-  KERNEL = kernel-bin | gzip | fit gzip $$(DEVICE_DTS_DIR)/$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | gzip | fit gzip
   IMAGES := sdcard.img.gz sysupgrade.bin
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
