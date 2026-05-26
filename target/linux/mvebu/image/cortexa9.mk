@@ -102,7 +102,7 @@ define Device/cznic_turris-omnia
   KERNEL_INSTALL := 1
   SOC := armada-385
   KERNEL := kernel-bin
-  KERNEL_INITRAMFS := kernel-bin | libdeflate-gzip | fit gzip $$(KDIR)/image-$$(DEVICE_DTS).dtb
+  KERNEL_INITRAMFS := kernel-bin | libdeflate-gzip | fit gzip
   DEVICE_PACKAGES :=  \
     mkf2fs e2fsprogs kmod-fs-vfat kmod-nls-cp437 kmod-nls-iso8859-1 \
     wpad-basic-mbedtls kmod-ath9k kmod-ath10k-ct ath10k-firmware-qca988x-ct \

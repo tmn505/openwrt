@@ -9,7 +9,7 @@ define Device/Default
   DEVICE_DTS = $(subst _,-,$(1))
   FILESYSTEMS := squashfs
   KERNEL := kernel-bin | gzip | uImage gzip
-  KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip $$(DEVICE_DTS_DIR)/$$(DEVICE_DTS).dtb
+  KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip
   KERNEL_LOADADDR := 0x80000000
   IMAGE_SIZE := 64m
   IMAGE/sysupgrade.bin = \
@@ -20,7 +20,7 @@ define Device/Default
 endef
 
 define Device/fsl-sdboot
-  KERNEL = kernel-bin | gzip | fit gzip $$(DEVICE_DTS_DIR)/$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | gzip | fit gzip
   IMAGES := sdcard.img.gz sysupgrade.bin
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
@@ -45,7 +45,7 @@ define Device/fsl_ls1012a-frdm
     append-kernel | pad-to $$(BLOCKSIZE) | \
     append-rootfs | pad-rootfs | \
     check-size $(LS_SYSUPGRADE_IMAGE_SIZE) | append-metadata
-  KERNEL := kernel-bin | gzip | fit gzip $$(DEVICE_DTS_DIR)/$$(DEVICE_DTS).dtb
+  KERNEL := kernel-bin | gzip | fit gzip
 endef
 TARGET_DEVICES += fsl_ls1012a-frdm
 
@@ -100,7 +100,7 @@ define Device/fsl_ls1028a-rdb
   DEVICE_VENDOR := NXP
   DEVICE_MODEL := LS1028A-RDB
   DEVICE_VARIANT := Default
-  KERNEL = kernel-bin | gzip | fit gzip $$(DEVICE_DTS_DIR)/$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | gzip | fit gzip
   DEVICE_PACKAGES += \
     kmod-hwmon-ina2xx \
     kmod-hwmon-lm90 \

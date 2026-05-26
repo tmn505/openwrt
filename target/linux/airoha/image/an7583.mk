@@ -1,6 +1,6 @@
 define Device/FitImageLzma
 	KERNEL_SUFFIX := -uImage.itb
-	KERNEL = kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(DEVICE_DTS).dtb
+	KERNEL = kernel-bin | lzma | fit lzma
 	KERNEL_NAME := Image
 endef
 

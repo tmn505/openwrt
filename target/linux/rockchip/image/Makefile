@@ -46,7 +46,7 @@ endef
 ### Devices ###
 define Device/Default
   PROFILES := Default
-  KERNEL = kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL = kernel-bin | lzma | fit lzma
   KERNEL_LOADADDR :=
   BOOT_SCRIPT :=
   IMAGES := sysupgrade.img.gz

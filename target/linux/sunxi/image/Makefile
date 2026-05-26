@@ -36,11 +36,11 @@ define Device/Default
 endef
 
 define Device/FitImageLzma
-  KERNEL = kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | lzma | fit lzma
 endef
 
 define Device/FitImageGzip
-  KERNEL = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(DEVICE_DTS).dtb
+  KERNEL = kernel-bin | gzip | fit gzip
 endef
 
 include $(SUBTARGET).mk

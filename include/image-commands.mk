@@ -431,18 +431,16 @@ define Build/initrd_compression
 endef
 
 define Build/fit-its
-	$(if $(findstring with-rootfs,$(word 3,$(1))), \
+	$(if $(findstring with-rootfs,$(word 2,$(1))), \
 		$(call locked,dd if=$(IMAGE_ROOTFS) of=$(IMAGE_ROOTFS).pagesync bs=4096 conv=sync, \
 		  gen-cpio$(if $(TARGET_PER_DEVICE_ROOTFS),.$(ROOTFS_ID/$(DEVICE_NAME)))))
 	$(TOPDIR)/scripts/mkits.sh \
 		-D $(DEVICE_NAME) -o $@.its -k $@ \
 		-C $(word 1,$(1)) \
-		$(if $(word 2,$(1)),\
-			$(if $(findstring 11,$(if $(DEVICE_DTS_OVERLAY),1)$(if $(findstring $(KERNEL_BUILD_DIR)/image-,$(word 2,$(1))),,1)), \
-				-d $(KERNEL_BUILD_DIR)/image-$$(basename $(word 2,$(1))), \
-				-d $(word 2,$(1)))) \
-		$(if $(findstring with-rootfs,$(word 3,$(1))),-r $(IMAGE_ROOTFS)) \
-		$(if $(findstring with-initrd,$(word 3,$(1))), \
+		$(if $(DEVICE_DTS),\
+			-d $(KERNEL_BUILD_DIR)/image-$$(basename $(firstword $(DEVICE_DTS)).dtb)) \
+		$(if $(findstring with-rootfs,$(word 2,$(1))),-r $(IMAGE_ROOTFS)) \
+		$(if $(findstring with-initrd,$(word 2,$(1))), \
 			$(if $(CONFIG_TARGET_ROOTFS_INITRAMFS_SEPARATE), \
 				-i $(KERNEL_BUILD_DIR)/initrd$(if $(TARGET_PER_DEVICE_ROOTFS),.$(ROOTFS_ID/$(DEVICE_NAME))).cpio$(strip $(call Build/initrd_compression)))) \
 		-a $(KERNEL_LOADADDR) -e $(if $(KERNEL_ENTRY),$(KERNEL_ENTRY),$(KERNEL_LOADADDR)) \
@@ -455,8 +453,8 @@ define Build/fit-its
 endef
 
 define Build/fit-image
-	$(call locked,PATH=$(LINUX_DIR)/scripts/dtc:$(PATH) mkimage $(if $(findstring external,$(word 3,$(1))),\
-		-E -B 0x1000 $(if $(findstring static,$(word 3,$(1))),-p 0x1000)) -f $@.its $@.new, \
+	$(call locked,PATH=$(LINUX_DIR)/scripts/dtc:$(PATH) mkimage $(if $(findstring external,$(word 2,$(1))),\
+		-E -B 0x1000 $(if $(findstring static,$(word 2,$(1))),-p 0x1000)) -f $@.its $@.new, \
 	  gen-cpio$(if $(TARGET_PER_DEVICE_ROOTFS),.$(ROOTFS_ID/$(DEVICE_NAME))))
 	@mv $@.new $@
 endef

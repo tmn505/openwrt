@@ -39,7 +39,7 @@ endef
 
 define Device/FitImageGzip
 	KERNEL_SUFFIX := -fit-uImage.itb
-	KERNEL = kernel-bin | gzip | fit gzip $$(DTS_DIR)/$$(DEVICE_DTS).dtb
+	KERNEL = kernel-bin | gzip | fit gzip
 	KERNEL_NAME := Image
 endef
 
