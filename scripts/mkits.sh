@@ -97,28 +97,6 @@ fi
 	DTADDR="$FDTADDR"
 }
 
-# Conditionally create fdt information
-if [ -n "${DTB}" ]; then
-	FDT_NODE="
-		fdt${REFERENCE_CHAR}$FDTNUM {
-			description = \"${ARCH_UPPER} OpenWrt ${DEVICE} device tree blob\";
-			${COMPATIBLE_PROP}
-			data = /incbin/(\"${DTB}\");
-			type = \"flat_dt\";
-			${DTADDR:+load = <${DTADDR}>;}
-			arch = \"${ARCH}\";
-			compression = \"none\";
-			hash${REFERENCE_CHAR}1 {
-				algo = \"crc32\";
-			};
-			hash${REFERENCE_CHAR}2 {
-				algo = \"${HASH}\";
-			};
-		};
-"
-	FDT_PROP="fdt = \"fdt${REFERENCE_CHAR}$FDTNUM\";"
-fi
-
 if [ -n "${INITRD}" ]; then
 	INITRD_NODE="
 		initrd${REFERENCE_CHAR}$INITRDNUM {
@@ -139,14 +117,15 @@ if [ -n "${INITRD}" ]; then
 	INITRD_PROP="ramdisk=\"initrd${REFERENCE_CHAR}${INITRDNUM}\";"
 fi
 
-
-if [ -n "${ROOTFS}" ]; then
-	ROOTFS_NODE="
-		rootfs${REFERENCE_CHAR}$ROOTFSNUM {
-			description = \"${ARCH_UPPER} OpenWrt ${DEVICE} rootfs\";
+# Conditionally create fdt information
+if [ -n "${DTB}" ]; then
+	FDT_NODE="
+		fdt${REFERENCE_CHAR}$FDTNUM {
+			description = \"${ARCH_UPPER} OpenWrt ${DEVICE} device tree blob\";
 			${COMPATIBLE_PROP}
-			data = /incbin/(\"${ROOTFS}.pagesync\");
-			type = \"filesystem\";
+			data = /incbin/(\"${DTB}\");
+			type = \"flat_dt\";
+			${DTADDR:+load = <${DTADDR}>;}
 			arch = \"${ARCH}\";
 			compression = \"none\";
 			hash${REFERENCE_CHAR}1 {
@@ -157,7 +136,7 @@ if [ -n "${ROOTFS}" ]; then
 			};
 		};
 "
-	LOADABLES="${LOADABLES:+$LOADABLES, }\"rootfs${REFERENCE_CHAR}${ROOTFSNUM}\""
+	FDT_PROP="fdt = \"fdt${REFERENCE_CHAR}$FDTNUM\";"
 fi
 
 # add DT overlay blobs
@@ -195,6 +174,26 @@ OVCONFIGS=""
 		};
 	"
 done
+
+if [ -n "${ROOTFS}" ]; then
+	ROOTFS_NODE="
+		rootfs${REFERENCE_CHAR}$ROOTFSNUM {
+			description = \"${ARCH_UPPER} OpenWrt ${DEVICE} rootfs\";
+			${COMPATIBLE_PROP}
+			data = /incbin/(\"${ROOTFS}.pagesync\");
+			type = \"filesystem\";
+			arch = \"${ARCH}\";
+			compression = \"none\";
+			hash${REFERENCE_CHAR}1 {
+				algo = \"crc32\";
+			};
+			hash${REFERENCE_CHAR}2 {
+				algo = \"${HASH}\";
+			};
+		};
+"
+	LOADABLES="${LOADABLES:+$LOADABLES, }\"rootfs${REFERENCE_CHAR}${ROOTFSNUM}\""
+fi
 
 # Create a default, fully populated DTS file
 DATA="/dts-v1/;
