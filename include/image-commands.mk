@@ -438,7 +438,7 @@ define Build/fit-its
 		-D $(DEVICE_NAME) -o $@.its -k $@ \
 		-C $(word 1,$(1)) \
 		$(if $(DEVICE_DTS),\
-			-d $(KERNEL_BUILD_DIR)/image-$$(basename $(firstword $(DEVICE_DTS)).dtb)) \
+			$(foreach dts, $(DEVICE_DTS), -d $(dts):$(KERNEL_BUILD_DIR)/image-$$(basename $(dts)).dtb)) \
 		$(if $(findstring with-rootfs,$(word 2,$(1))),-r $(IMAGE_ROOTFS)) \
 		$(if $(findstring with-initrd,$(word 2,$(1))), \
 			$(if $(CONFIG_TARGET_ROOTFS_INITRAMFS_SEPARATE), \

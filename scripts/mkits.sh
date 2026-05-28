@@ -29,7 +29,7 @@ usage() {
 	printf "\n\t-k ==> include kernel image 'kernel'"
 	printf "\n\t-D ==> human friendly Device Tree Blob 'name'"
 	printf "\n\t-n ==> fdt unit-address 'address'"
-	printf "\n\t-d ==> include Device Tree Blob 'dtb'"
+	printf "\n\t-d ==> include Device Tree Blob 'name:dtb'"
 	printf "\n\t-r ==> include RootFS blob 'rootfs'"
 	printf "\n\t-H ==> specify hash algo instead of SHA1"
 	printf "\n\t-l ==> legacy mode character (@ etc otherwise -)"
@@ -48,6 +48,7 @@ HASH=sha1
 LOADABLES=
 DTOVERLAY=
 DTADDR=
+DTB=
 
 while getopts ":A:a:c:C:D:d:e:f:i:k:l:n:o:O:v:r:s:H:" OPTION
 do
@@ -57,7 +58,7 @@ do
 		c ) CONFIG=$OPTARG;;
 		C ) COMPRESS=$OPTARG;;
 		D ) DEVICE=$OPTARG;;
-		d ) DTB=$OPTARG;;
+		d ) DTB="$DTB ${OPTARG}";;
 		e ) ENTRY_ADDR=$OPTARG;;
 		f ) COMPATIBLE=$OPTARG;;
 		i ) INITRD=$OPTARG;;
@@ -117,13 +118,20 @@ if [ -n "${INITRD}" ]; then
 	INITRD_PROP="ramdisk=\"initrd${REFERENCE_CHAR}${INITRDNUM}\";"
 fi
 
+DEFCONFIG="$CONFIG"
+FDT_NODE=""
+CONFIGS=""
 # Conditionally create fdt information
 if [ -n "${DTB}" ]; then
-	FDT_NODE="
+	for dtb in $DTB; do
+		dtb_blob=${dtb##*:}
+		dtb_name=${dtb%%:*}
+		FDT_NODE="$FDT_NODE
+
 		fdt${REFERENCE_CHAR}$FDTNUM {
 			description = \"${ARCH_UPPER} OpenWrt ${DEVICE} device tree blob\";
 			${COMPATIBLE_PROP}
-			data = /incbin/(\"${DTB}\");
+			data = /incbin/(\"${dtb_blob}\");
 			type = \"flat_dt\";
 			${DTADDR:+load = <${DTADDR}>;}
 			arch = \"${ARCH}\";
@@ -136,7 +144,29 @@ if [ -n "${DTB}" ]; then
 			};
 		};
 "
-	FDT_PROP="fdt = \"fdt${REFERENCE_CHAR}$FDTNUM\";"
+		CONFIGS="$CONFIGS
+		${CONFIG:-$dtb_name} {
+			description = \"OpenWrt ${dtb_name}\";
+			kernel = \"kernel${REFERENCE_CHAR}1\";
+			fdt = \"fdt${REFERENCE_CHAR}$FDTNUM\";
+			${LOADABLES:+loadables = ${LOADABLES};}
+			${COMPATIBLE_PROP}
+			${INITRD_PROP}
+		};
+"
+		FDTNUM=$((FDTNUM + 1))
+		CONFIG=""
+	done
+else
+	CONFIGS="
+		${CONFIG} {
+			description = \"OpenWrt ${DEVICE}\";
+			kernel = \"kernel${REFERENCE_CHAR}1\";
+			${LOADABLES:+loadables = ${LOADABLES};}
+			${COMPATIBLE_PROP}
+			${INITRD_PROP}
+		};
+"
 fi
 
 # add DT overlay blobs
@@ -226,15 +256,8 @@ ${ROOTFS_NODE}
 	};
 
 	configurations {
-		default = \"${CONFIG}\";
-		${CONFIG} {
-			description = \"OpenWrt ${DEVICE}\";
-			kernel = \"kernel${REFERENCE_CHAR}1\";
-			${FDT_PROP}
-			${LOADABLES:+loadables = ${LOADABLES};}
-			${COMPATIBLE_PROP}
-			${INITRD_PROP}
-		};
+		default = \"${DEFCONFIG}\";
+		${CONFIGS}
 		${OVCONFIGS}
 	};
 };"
