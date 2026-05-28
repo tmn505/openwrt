@@ -29,7 +29,7 @@ define Build/an7581-chainloader
     -a 0x80200000 -e 0x80200000 \
     -c conf-uboot \
     -A arm64 -v u-boot \
-    -d $(STAGING_DIR_IMAGE)/an7581_$1-u-boot.dtb \
+    -d $(DEVICE_NAME):$(STAGING_DIR_IMAGE)/an7581_$1-u-boot.dtb \
     -s 0x82000000
   PATH=$(LINUX_DIR)/scripts/dtc:$(PATH) \
     $(STAGING_DIR_HOST)/bin/mkimage \
