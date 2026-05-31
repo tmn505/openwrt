@@ -8,7 +8,7 @@ JFFS2_BLOCKSIZE = 128k
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
-DEVICE_VARS += BOOT_SCRIPT UBOOT
+DEVICE_VARS += UBOOT
 KERNEL_LOADADDR := 0x00008000
 
 define Build/boot-scr
