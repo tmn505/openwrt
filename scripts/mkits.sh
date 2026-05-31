@@ -31,6 +31,7 @@ usage() {
 	printf "\n\t-n ==> fdt unit-address 'address'"
 	printf "\n\t-d ==> include Device Tree Blob 'name:dtb'"
 	printf "\n\t-r ==> include RootFS blob 'rootfs'"
+	printf "\n\t-b ==> include U-Boot script 'script'"
 	printf "\n\t-H ==> specify hash algo instead of SHA1"
 	printf "\n\t-l ==> legacy mode character (@ etc otherwise -)"
 	printf "\n\t-o ==> create output file 'its_file'"
@@ -50,11 +51,12 @@ DTOVERLAY=
 DTADDR=
 DTB=
 
-while getopts ":A:a:c:C:D:d:e:f:i:k:l:n:o:O:v:r:s:H:" OPTION
+while getopts ":A:a:b:c:C:D:d:e:f:i:k:l:n:o:O:v:r:s:H:" OPTION
 do
 	case $OPTION in
 		A ) ARCH=$OPTARG;;
 		a ) LOAD_ADDR=$OPTARG;;
+		b ) BOOTSCRIPT=$OPTARG;;
 		c ) CONFIG=$OPTARG;;
 		C ) COMPRESS=$OPTARG;;
 		D ) DEVICE=$OPTARG;;
@@ -225,6 +227,25 @@ if [ -n "${ROOTFS}" ]; then
 	LOADABLES="${LOADABLES:+$LOADABLES, }\"rootfs${REFERENCE_CHAR}${ROOTFSNUM}\""
 fi
 
+if [ -n "${BOOTSCRIPT}" ]; then
+	BOOTSCRIPT_NODE="
+		bootscript {
+			description = \"${ARCH_UPPER} OpenWrt ${DEVICE} boot script\";
+			${COMPATIBLE_PROP}
+			data = /incbin/(\"${BOOTSCRIPT}\");
+			type = \"script\";
+			arch = \"${ARCH}\";
+			compression = \"none\";
+			hash${REFERENCE_CHAR}1 {
+				algo = \"crc32\";
+			};
+			hash${REFERENCE_CHAR}2 {
+				algo = \"${HASH}\";
+			};
+		};
+"
+fi
+
 # Create a default, fully populated DTS file
 DATA="/dts-v1/;
 
@@ -253,6 +274,7 @@ ${INITRD_NODE}
 ${FDT_NODE}
 ${FDTOVERLAY_NODE}
 ${ROOTFS_NODE}
+${BOOTSCRIPT_NODE}
 	};
 
 	configurations {
