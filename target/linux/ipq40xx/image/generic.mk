@@ -161,6 +161,19 @@ define Device/alfa-network_ap120c-ac
 endef
 TARGET_DEVICES += alfa-network_ap120c-ac
 
+define Device/arista_o-105e
+	$(call Device/FitzImage)
+	DEVICE_VENDOR := Arista Networks
+	DEVICE_MODEL := O-105E
+	DEVICE_ALT0_VENDOR := WatchGuard
+	DEVICE_ALT0_MODEL := AP327X
+	SOC := qcom-ipq4029
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	IMAGE_SIZE := 65536k
+endef
+TARGET_DEVICES += arista_o-105e
+
 define Device/arista_w-118
 	$(call Device/FitzImage)
 	DEVICE_VENDOR := Arista Networks
